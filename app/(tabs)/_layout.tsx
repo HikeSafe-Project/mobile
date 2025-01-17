@@ -10,8 +10,8 @@ const screens = [
     icon: "search" as const,
   },
   {
-    name: "new-post/index",
-    icon: "add-circle" as const,
+    name: "ticket/index",
+    icon: "ticket" as const,
   },
   {
     name: "index",

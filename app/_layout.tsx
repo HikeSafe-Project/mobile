@@ -8,7 +8,6 @@ import 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -35,16 +34,16 @@ export default function RootLayout() {
 const NavScreen = () => {
   const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        router.replace('/(auth)/login');
-      } 
-    }
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     const token = await AsyncStorage.getItem('token');
+  //     if (!token) {
+  //       router.replace('/(auth)/login');
+  //     } 
+  //   }
 
-    checkAuth();
-  }, []);
+  //   checkAuth();
+  // }, []);
   
   return (
     <ThemeProvider value={DefaultTheme}>
@@ -53,6 +52,7 @@ const NavScreen = () => {
         <Stack.Screen name="(auth)/register/index" options={{ headerShown: false }} />
         <Stack.Screen name="tracking" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
