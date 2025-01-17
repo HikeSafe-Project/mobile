@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Mobile",
+    "slug": "Mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show your real-time position on the map.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to show your real-time position on the map.",
+        "NSLocationAlwaysUsageDescription": "This app needs access to your location at all times to provide accurate navigation."
+      }
+    },
+    "android": {
+      "package": "com.anonymous.Mobile",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "This app needs access to your location to show your position on the map.",
+          "locationWhenInUsePermission": "This app needs access to your location while using the app.",
+          "locationAlwaysPermission": "This app needs access to your location at all times for accurate tracking."
+        }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsVersion": "11.0.0",
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiemhpZGFuIiwiYSI6ImNtNXpncm81eTAyZWIya3I0ZjJxaWd5MnQifQ.8o0j_QJP6bH3VyWIdRtIbw"
+        }
+      ]
+    ]
+  }
+}
