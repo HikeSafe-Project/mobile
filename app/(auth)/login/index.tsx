@@ -1,5 +1,15 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
+import React from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Image,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
@@ -7,19 +17,27 @@ import { Colors } from '@/constants/Colors';
 import { StatusBar } from 'expo-status-bar';
 import { API_ENDPOINTS } from '@/constants/Api';
 import axios from 'axios';
+import { useForm, Controller } from 'react-hook-form';
+
+interface LoginFormInputs {
+  email: string;
+  password: string;
+}
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>();
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Validation Error', 'Email and Password are required.');
-      return;
-    }
+  const handleLogin = async (data: LoginFormInputs) => {
+    const { email, password } = data;
 
+    setIsLoading(true);
     try {
       const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, {
         email,
@@ -29,19 +47,18 @@ export default function LoginScreen() {
       const token = response.data.data.accessToken;
       await AsyncStorage.setItem('token', token);
 
-      Alert.alert('Success', 'Login successful!');
-
       router.replace('/(tabs)');
-
     } catch (error) {
       Alert.alert('Cannot Login', 'Invalid email or password!');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <React.Fragment>
       <StatusBar style="auto" />
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.header}>
           <Image source={require('@/assets/images/Union.png')} style={styles.logo} />
           <Text style={styles.headerText}>HikeSafe</Text>
@@ -52,21 +69,51 @@ export default function LoginScreen() {
         <View style={styles.form}>
           <Text style={styles.title}>Welcome back, please login to your account</Text>
           <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
+          <Controller
+            control={control}
+            name="email"
+            rules={{
+              required: 'Email is required',
+              pattern: {
+                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                message: 'Invalid email format',
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={[
+                  styles.input,
+                  errors.email && { borderColor: 'red' },
+                ]}
+                placeholder="Email"
+                keyboardType="email-address"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+              />
+            )}
           />
+          {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
+
           <Text style={styles.label}>Password</Text>
           <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Enter your password"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
+            <Controller
+              control={control}
+              name="password"
+              rules={{ required: 'Password is required' }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[
+                    styles.textInput,
+                    errors.password && { borderColor: 'red' },
+                  ]}
+                  placeholder="Enter your password"
+                  secureTextEntry={!showPassword}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
               <FontAwesome
@@ -76,14 +123,24 @@ export default function LoginScreen() {
               />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleSubmit(handleLogin)}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
           </TouchableOpacity>
           <Link href="/register" style={styles.link}>
             Don't have an account? Register
           </Link>
         </View>
-      </View>
+      </ScrollView>
     </React.Fragment>
   );
 }
@@ -149,6 +206,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   buttonText: {
     color: '#fff',
@@ -176,5 +235,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     paddingVertical: 5,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
   },
 });

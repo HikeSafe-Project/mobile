@@ -6,7 +6,9 @@ export const API_ENDPOINTS = {
   AUTH: {
     REGISTER_CUSTOMER: `${BASE_URL}auth/register-customer`,
     LOGIN: `${BASE_URL}auth/login`,
+    ME: `${BASE_URL}auth/me`,
   },
+
 };
 
 const api = axios.create({

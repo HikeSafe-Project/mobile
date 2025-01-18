@@ -203,8 +203,8 @@ export default function RegisterScreen() {
             <Text style={styles.buttonText}>Register</Text>
           </TouchableOpacity>
 
-          <Link href="/register" style={styles.link}>
-            Don't have an account? Register
+          <Link href="/login" style={styles.link}>
+            Already have an account? Log in
           </Link>
         </View>
       </ScrollView>
