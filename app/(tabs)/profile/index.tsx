@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ProfileScreen = () => {
   const profile = {
@@ -45,7 +46,16 @@ const ProfileScreen = () => {
         style={styles.editButton}
         onPress={() => router.push("edit-profile")}
       >
-        <Text style={styles.editButtonText}>Edit Profile</Text>
+        <Text style={styles.ButtonText}>Edit Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={() => {
+          AsyncStorage.removeItem("token");
+          router.replace("/(auth)/login");
+        }}
+      >
+        <Text style={styles.ButtonText}>Logout</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -107,10 +117,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  editButtonText: {
+  ButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  logoutButton: {
+    backgroundColor: "#DC2626",
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
   },
 });
 

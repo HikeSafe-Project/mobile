@@ -34,22 +34,21 @@ export default function RootLayout() {
 const NavScreen = () => {
   const router = useRouter();
 
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     const token = await AsyncStorage.getItem('token');
-  //     if (!token) {
-  //       router.replace('/(auth)/login');
-  //     } 
-  //   }
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        router.replace('login');
+      } 
+    }
 
-  //   checkAuth();
-  // }, []);
+    checkAuth();
+  }, []);
   
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(auth)/login/index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/register/index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="checkout" options={{ headerShown: false }} />
         <Stack.Screen name="tracking" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

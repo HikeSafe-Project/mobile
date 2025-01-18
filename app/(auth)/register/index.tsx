@@ -1,120 +1,213 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Platform,
-} from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Image, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { StatusBar } from 'expo-status-bar';
+import { useForm, Controller } from 'react-hook-form';
+import { API_ENDPOINTS } from '@/constants/Api';
+import axios from 'axios';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+type FormData = {
+  email: string;
+  password: string;
+  fullName: string;
+  birthDate: string;
+  nik: string;
+  gender: string;
+  phone: string;
+  address: string;
+};
 
 export default function RegisterScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
+    defaultValues: {
+      email: '',
+      password: '',
+      fullName: '',
+      birthDate: '',
+      nik: '',
+      gender: '',
+      phone: '',
+      address: '',
+    },
+  });
+
   const router = useRouter();
 
-  const handleRegister = () => {
-    if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'All fields are required');
-      return;
-    }
+  const handleRegister = async (data: FormData) => {
+    try {
+      const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER_CUSTOMER, data);
+      const userData = response.data.data;
 
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Error during Register:', error);
+      Alert.alert('Error', 'Something went wrong!');
     }
+  };
 
-    // Simulate successful registration
-    Alert.alert('Registration Successful', 'You can now log in', [
-      {
-        text: 'OK',
-        onPress: () => router.push('/login'),
-      },
-    ]);
+  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+    const currentDate = selectedDate || new Date();
+    setShowDatePicker(false);
+    // Update the form value for birthDate
+    setValue('birthDate', currentDate.toISOString().split('T')[0]);
   };
 
   return (
     <React.Fragment>
       <StatusBar style="auto" />
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Sesuaikan dengan platform
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <View style={styles.header}>
-              <Image source={require('@/assets/images/Union.png')} style={styles.logo} />
-              <Text style={styles.headerText}>HikeSafe</Text>
-            </View>
-            <View style={styles.imageContainer}>
-              <Image source={require('@/assets/images/mountain.png')} style={styles.image} />
-            </View>
-            <View style={styles.form}>
-              <Text style={styles.title}>Create your account</Text>
-              <Text style={styles.label}>Email</Text>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Image source={require('@/assets/images/Union.png')} style={styles.logo} />
+          <Text style={styles.headerText}>HikeSafe</Text>
+        </View>
+        <View style={styles.imageContainer}>
+          <Image source={require('@/assets/images/mountain.png')} style={styles.image} />
+        </View>
+        <View style={styles.form}>
+          <Text style={styles.title}>Create an Account</Text>
+
+          {/* Email */}
+          <Text style={styles.label}>Email</Text>
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value } }) => (
               <TextInput
                 style={styles.input}
                 placeholder="Email"
                 keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
+                value={value}
+                onChangeText={onChange}
               />
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.inputContainer}>
+            )}
+          />
+          {errors.email && <Text style={styles.errorText}>This field is required</Text>}
+
+          {/* Password */}
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.inputContainer}>
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.textInput}
                   placeholder="Enter your password"
                   secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
+                  value={value}
+                  onChangeText={onChange}
                 />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <FontAwesome
-                    name={showPassword ? 'eye' : 'eye-slash'}
-                    size={20}
-                    color="gray"
-                  />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.label}>Confirm Password</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Confirm your password"
-                  secureTextEntry={!showPassword}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                  <FontAwesome
-                    name={showPassword ? 'eye' : 'eye-slash'}
-                    size={20}
-                    color="gray"
-                  />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity style={styles.button} onPress={handleRegister}>
-                <Text style={styles.buttonText}>Register</Text>
-              </TouchableOpacity>
-              <Link href="/login" style={styles.link}>
-                Already have an account? Login
-              </Link>
-            </View>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+              )}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="gray" />
+            </TouchableOpacity>
+          </View>
+          {errors.password && <Text style={styles.errorText}>This field is required</Text>}
+
+          {/* Full Name */}
+          <Text style={styles.label}>Full Name</Text>
+          <Controller
+            control={control}
+            name="fullName"
+            render={({ field: { onChange, value } }) => (
+              <TextInput style={styles.input} placeholder="Full Name" value={value} onChangeText={onChange} />
+            )}
+          />
+          {errors.fullName && <Text style={styles.errorText}>This field is required</Text>}
+
+          {/* Birth Date */}
+          <Text style={styles.label}>Birth Date</Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+            <Text>{control._formValues.birthDate || 'Select your birth date'}</Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={new Date()}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
+          {errors.birthDate && <Text style={styles.errorText}>This field is required</Text>}
+
+          {/* NIK */}
+          <Text style={styles.label}>NIK</Text>
+          <Controller
+            control={control}
+            name="nik"
+            rules={{
+              minLength: {
+                value: 16,
+                message: 'NIK must be at least 16 characters',
+              },
+            }}
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={styles.input}
+                placeholder="NIK"
+                value={value}
+                onChangeText={onChange}
+                keyboardType="numeric"
+              />
+            )}
+          />
+          {errors.nik && <Text style={styles.errorText}>{errors.nik.message}</Text>}
+
+          {/* Gender */}
+          <Text style={styles.label}>Gender</Text>
+          <Controller
+            control={control}
+            name="gender"
+            render={({ field: { onChange, value } }) => (
+              <TextInput style={styles.input} placeholder="Gender" value={value} onChangeText={onChange} />
+            )}
+          />
+          {errors.gender && <Text style={styles.errorText}>This field is required</Text>}
+
+          {/* Phone */}
+          <Text style={styles.label}>Phone</Text>
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                style={styles.input}
+                placeholder="Phone Number"
+                keyboardType="phone-pad"
+                value={value}
+                onChangeText={onChange}
+              />
+            )}
+          />
+          {errors.phone && <Text style={styles.errorText}>This field is required</Text>}
+
+          {/* Address */}
+          <Text style={styles.label}>Address</Text>
+          <Controller
+            control={control}
+            name="address"
+            render={({ field: { onChange, value } }) => (
+              <TextInput style={styles.input} placeholder="Address" value={value} onChangeText={onChange} />
+            )}
+          />
+          {errors.address && <Text style={styles.errorText}>This field is required</Text>}
+
+          <TouchableOpacity style={styles.button} onPress={handleSubmit(handleRegister)}>
+            <Text style={styles.buttonText}>Register</Text>
+          </TouchableOpacity>
+
+          <Link href="/register" style={styles.link}>
+            Don't have an account? Register
+          </Link>
+        </View>
+      </ScrollView>
     </React.Fragment>
   );
 }
@@ -207,5 +300,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     paddingVertical: 5,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
   },
 });

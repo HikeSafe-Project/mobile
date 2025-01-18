@@ -5,6 +5,8 @@ import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { StatusBar } from 'expo-status-bar';
+import { API_ENDPOINTS } from '@/constants/Api';
+import axios from 'axios';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -13,80 +15,75 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Validation Error', 'Email and Password are required.');
+      return;
+    }
+
     try {
-      const userData = [
-        {
-          "email": "admin@user",
-          "password": "admin",
-          "role": "admin"
-        },
-        {
-          "email": "user@user",
-          "password": "user",
-          "role": "user"
-        }
-      ]
+      const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, {
+        email,
+        password,
+      });
 
-      const user = userData.find(user => user.email === email && user.password === password);
+      const token = response.data.data.accessToken;
+      await AsyncStorage.setItem('token', token);
 
-      if (user) {
-        await AsyncStorage.setItem('user', JSON.stringify(user));
-        router.replace('/(tabs)');
-      } else {
-        Alert.alert('Login Failed', 'Invalid email or password');
-      }
+      Alert.alert('Success', 'Login successful!');
+
+      router.replace('/(tabs)');
+
     } catch (error) {
-      console.error('Error during login:', error);
-      Alert.alert('Error', 'Something went wrong!');
+      Alert.alert('Cannot Login', 'Invalid email or password!');
     }
   };
 
   return (
     <React.Fragment>
-    <StatusBar style="auto" />
-    <View style={styles.container}>
-      <View style={styles.header}> 
-         <Image source={require('@/assets/images/Union.png')} style={styles.logo} />
-         <Text style={styles.headerText}>HikeSafe</Text>
-      </View>
-      <View style={styles.imageContainer}>
-        <Image source={require('@/assets/images/mountain.png')} style={styles.image} />
-      </View> 
-      <View style={styles.form}>
-        <Text style={styles.title}>Welcome back, please login your account</Text>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
+      <StatusBar style="auto" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Image source={require('@/assets/images/Union.png')} style={styles.logo} />
+          <Text style={styles.headerText}>HikeSafe</Text>
+        </View>
+        <View style={styles.imageContainer}>
+          <Image source={require('@/assets/images/mountain.png')} style={styles.image} />
+        </View>
+        <View style={styles.form}>
+          <Text style={styles.title}>Welcome back, please login to your account</Text>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
             style={styles.input}
             placeholder="Email"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
-        />
-        <Text style={styles.label}>Password</Text>
-        <View style={styles.inputContainer}>
+          />
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.inputContainer}>
             <TextInput
-                style={styles.textInput}
-                placeholder="Enter your password"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={(text) => setPassword(text)}
+              style={styles.textInput}
+              placeholder="Enter your password"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <FontAwesome
+              <FontAwesome
                 name={showPassword ? 'eye' : 'eye-slash'}
                 size={20}
                 color="gray"
-            />
+              />
             </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          </View>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-        <Link href="/register" style={styles.link}>
+          </TouchableOpacity>
+          <Link href="/register" style={styles.link}>
             Don't have an account? Register
-        </Link>
+          </Link>
+        </View>
       </View>
-    </View>
     </React.Fragment>
   );
 }
@@ -101,16 +98,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 40,
+    paddingBottom: 20,
   },
   logo: {
     marginRight: 10,
-    marginTop: 20,
   },
   headerText: {
     fontSize: 30,
     fontWeight: '700',
-    marginTop: 40,
-    marginBottom: 20,
     color: '#fff',
   },
   imageContainer: {
@@ -126,12 +122,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '300',
+    marginTop: 20,
     marginBottom: 20,
     color: '#374151',
   },
   form: {
     flexDirection: 'column',
-    padding: 20,
+    paddingHorizontal: 20,
   },
   label: {
     fontSize: 16,
