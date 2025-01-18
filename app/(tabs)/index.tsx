@@ -3,6 +3,7 @@ import { Link } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import ButtonCom from '@/components/ui/Button';
 
 const historyData = [
   { id: '1', location: 'Gunung Rinjani', date: '15 Januari 2025' },
@@ -17,16 +18,19 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.greeting}>
             <Text style={styles.helloText}>Hello, Username</Text>
-            <Text style={styles.title}>Track Your Belongings</Text>
+            <Text style={styles.title}>Track Your Advanture</Text>
           </View>
           <Image source={require('@/assets/images/Illustration.png')} style={styles.image} />
         </View>
 
-        <TouchableOpacity style={styles.button}>
-          <Link href="/tracking" style={styles.buttonText}>
-            Tracking the hikers
+        <ButtonCom 
+          textStyle={{ paddingVertical: 8, paddingHorizontal: 5, fontSize: 18 }}
+          variant='primary'
+        >
+          <Link href="/tracking">
+            Track Your Hiking History
           </Link>
-        </TouchableOpacity>
+        </ButtonCom>
       </View>
 
       <View style={styles.bottomSection}>
@@ -72,7 +76,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 40,
   },
   greeting: {
     flex: 1,

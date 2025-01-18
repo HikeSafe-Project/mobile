@@ -3,20 +3,20 @@ import {
   StyleSheet,
   View,
   Text,
-  TouchableOpacity,
   Image,
-  ScrollView,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { useRouter } from "expo-router";
+import { useRouter, Link } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ButtonCom from "@/components/ui/Button";
 
 const ProfileScreen = () => {
   const profile = {
     fullname: "John Doe",
+    email: "john.doe@example.com",
     birth_date: "1990-01-01",
     NIK: "1234567890123456",
-    img: "https://via.placeholder.com/150",
+    img: "https://lenox-pasifik.co.id/wp-content/uploads/2016/06/team-1-640x640.jpg",
     gender: "Male",
     address: "123 Example Street, New York, USA",
   };
@@ -24,40 +24,45 @@ const ProfileScreen = () => {
   const router = useRouter();
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
+      <Image source={require("@/assets/images/mountainbackground.png")} style={styles.image} />
+      <View style={styles.infoCard}>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>NIK</Text>
+          <Text style={styles.infoValue}>{profile.NIK}</Text>
+
+          <Text style={styles.infoLabel}>Birth Date</Text>
+          <Text style={styles.infoValue}>{profile.birth_date}</Text>
+
+          <Text style={styles.infoLabel}>Gender</Text>
+          <Text style={styles.infoValue}>{profile.gender}</Text>
+
+          <Text style={styles.infoLabel}>Address</Text>
+          <Text style={styles.infoValue}>{profile.address}</Text>
+        </View>
+      </View>
+
       <View style={styles.header}>
         <Image source={{ uri: profile.img }} style={styles.profileImage} />
         <Text style={styles.name}>{profile.fullname}</Text>
-        <Text style={styles.subInfo}>{profile.gender}</Text>
+        <Text style={styles.subInfo}>{profile.email}</Text>
+        <ButtonCom 
+          variant='ghost' 
+        >
+            <Link href='/edit-profile'>Edit Profile</Link>
+        </ButtonCom>
       </View>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoLabel}>Birth Date</Text>
-        <Text style={styles.infoValue}>{profile.birth_date}</Text>
-
-        <Text style={styles.infoLabel}>NIK</Text>
-        <Text style={styles.infoValue}>{profile.NIK}</Text>
-
-        <Text style={styles.infoLabel}>Address</Text>
-        <Text style={styles.infoValue}>{profile.address}</Text>
-      </View>
-
-      <TouchableOpacity
-        style={styles.editButton}
-        onPress={() => router.push("edit-profile")}
-      >
-        <Text style={styles.ButtonText}>Edit Profile</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.logoutButton}
+      <ButtonCom 
+        variant='danger'
         onPress={() => {
-          AsyncStorage.removeItem("token");
-          router.replace("/(auth)/login");
+          AsyncStorage.removeItem('token');
+          router.replace('/(auth)/login');
         }}
       >
-        <Text style={styles.ButtonText}>Logout</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        Logout
+      </ButtonCom>
+    </View>
   );
 };
 
@@ -66,33 +71,48 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "#f3f4f6",
     padding: 20,
-    marginTop: 20,
+  },
+  image: {
+    width: "115%",
+    height: 300,
+    position: "absolute",
+    top: -120,
+    left: 0,
   },
   header: {
+    position: "absolute",
     alignItems: "center",
-    marginBottom: 30,
+    justifyContent: "center",
+    left: 0,
+    right: 0,
+    top: 80
   },
   profileImage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     borderRadius: 60,
     borderWidth: 2,
     borderColor: Colors.primary,
   },
   name: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#1F2937",
     marginTop: 10,
   },
   subInfo: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#4B5563",
+    marginBottom: 5,
+  },
+  infoContainer: {
+    marginTop: 150,
   },
   infoCard: {
     backgroundColor: "#ffffff",
     borderRadius: 10,
     padding: 20,
+    marginTop: 110,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOpacity: 0.1,

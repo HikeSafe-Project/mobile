@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import ButtonCom from "@/components/ui/Button";
 
 const TransactionScreen: React.FC = () => {
   const [startDate, setStartDate] = useState<Date>(new Date());
@@ -96,9 +97,12 @@ const TransactionScreen: React.FC = () => {
             <Text style={styles.value}>Rp. 500.000</Text>
           </View>
 
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Book Now</Text>
-          </TouchableOpacity>
+          <ButtonCom
+            textStyle={{ padding: 5 }}
+            variant="primary"
+          >
+            Book Now
+          </ButtonCom>
         </View>
       </View>
     </View>

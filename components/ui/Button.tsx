@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors";
 import { StyleSheet, Text, TouchableOpacity, ViewStyle, TextStyle } from "react-native";
 
 interface ButtonProps {
@@ -11,18 +12,20 @@ interface ButtonProps {
     | "outline"
     | "danger";
   disabled?: boolean;
-  className?: string;
   children?: React.ReactNode;
   props?: ButtonProps;
+  propStyle?: ViewStyle;
+  textStyle?: TextStyle; // Add custom text style support
 }
 
 const Button: React.FC<ButtonProps> = ({
   onPress,
   variant = "primary",
   disabled = false,
-  className = "",
   children,
   props = {},
+  propStyle,
+  textStyle,
 }) => {
   const variantStyles = {
     primary: styles.primary,
@@ -37,15 +40,24 @@ const Button: React.FC<ButtonProps> = ({
   const disabledStyle = disabled ? styles.disabled : {};
 
   return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={onPress}
-        disabled={disabled}
-        style={[styles.base, variantStyles[variant], disabledStyle,]}
-        {...props}
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress}
+      disabled={disabled}
+      style={[styles.base, variantStyles[variant], disabledStyle, propStyle]}
+      {...props}
+    >
+      <Text
+        style={[
+          styles.textBase,
+          variant === "outline" || variant === "ghost" ? styles.textOutline : null,
+          disabled ? styles.textDisabled : null,
+          textStyle, // Apply custom text style
+        ]}
       >
         {children}
-      </TouchableOpacity>
+      </Text>
+    </TouchableOpacity>
   );
 };
 
@@ -58,25 +70,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   } as ViewStyle,
 
-  primary: {
-    backgroundColor: "#1D4ED8",
+  textBase: {
+    fontSize: 16,
+    fontWeight: "bold",
     color: "white",
   } as TextStyle,
+
+  primary: {
+    backgroundColor: "#4CAF50",
+  } as ViewStyle,
 
   secondary: {
     backgroundColor: "#E5E7EB",
-    color: "black",
-  } as TextStyle,
+  } as ViewStyle,
 
   warning: {
     backgroundColor: "#F59E0B",
-    color: "white",
-  } as TextStyle,
+  } as ViewStyle,
 
   danger: {
     backgroundColor: "#EF4444",
-    color: "white",
-  } as TextStyle,
+  } as ViewStyle,
 
   outline: {
     backgroundColor: "transparent",
@@ -86,20 +100,26 @@ const styles = StyleSheet.create({
 
   ghost: {
     backgroundColor: "transparent",
-    borderColor: "#1D4ED8",
+    borderColor: Colors.primary,
     borderWidth: 1,
-    color: "#DC2626",
-  } as TextStyle,
+  } as ViewStyle,
 
   gray: {
     backgroundColor: "#2D2D2D",
-  } as TextStyle,
+  } as ViewStyle,
 
   disabled: {
     backgroundColor: "#D1D5DB",
-    color: "#E5E7EB",
     borderColor: "#E5E7EB",
   } as ViewStyle,
+
+  textOutline: {
+    color: "black",
+  } as TextStyle,
+
+  textDisabled: {
+    color: "#A1A1AA",
+  } as TextStyle,
 });
 
 export default Button;
