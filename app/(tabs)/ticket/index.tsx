@@ -1,174 +1,193 @@
 import React, { useState } from "react";
 import {
-  StyleSheet,
   View,
   Text,
+  StyleSheet,
   TouchableOpacity,
+  Platform,
   TextInput,
-  ScrollView,
+  Image,
 } from "react-native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-interface Person {
-  name: string;
-  email: string;
-}
+const TransactionScreen: React.FC = () => {
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [toggleStartDate, setToggleStartDate] = useState<boolean>(false);
+  const [toggleEndDate, setToggleEndDate] = useState<boolean>(false);
 
-const TicketPurchaseScreen: React.FC = () => {
-  const [people, setPeople] = useState<Person[]>([{ name: "", email: "" }]);
-
-  const handleAddPerson = () => {
-    setPeople([...people, { name: "", email: "" }]);
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
-  const handleRemovePerson = (index: number) => {
-    const updatedPeople = [...people];
-    updatedPeople.splice(index, 1);
-    setPeople(updatedPeople);
-  };
-
-  const handleInputChange = (
-    index: number,
-    field: keyof Person,
-    value: string
-  ) => {
-    const updatedPeople = [...people];
-    updatedPeople[index][field] = value;
-    setPeople(updatedPeople);
-  };
-
-  const handlePurchase = () => {
-    const isDataComplete = people.every(
-      (person) => person.name !== "" && person.email !== ""
-    );
-
-    if (!isDataComplete) {
-      alert("Please complete all fields for each hiker.");
-      return;
+  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setToggleStartDate(Platform.OS === "ios");
+    if (selectedDate) {
+      setStartDate(selectedDate);
     }
+  };
 
-    alert(`Thank you for your purchase! ${people.length} ticket(s) reserved.`);
+  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setToggleEndDate(Platform.OS === "ios");
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Ticket Purchase</Text>
-
-      {people.map((person, index) => (
-        <View key={index} style={styles.personContainer}>
-          <Text style={styles.personTitle}>Hiker {index + 1}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            value={person.name}
-            onChangeText={(value) => handleInputChange(index, "name", value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email Address"
-            keyboardType="email-address"
-            value={person.email}
-            onChangeText={(value) => handleInputChange(index, "email", value)}
-          />
-          {people.length > 1 && (
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => handleRemovePerson(index)}
-            >
-              <Text style={styles.removeButtonText}>Remove Hiker</Text>
+    <View style={styles.container}>
+      <Image source={require("@/assets/images/mountainbackground.png")} style={styles.logo} />
+      <View style={styles.containerTransaction}>
+        <View style={styles.content}>
+          {/* Check-in Date */}
+          <View style={styles.date}>
+            <TouchableOpacity onPress={() => setToggleStartDate(true)}>
+              <MaterialCommunityIcons name="calendar-edit" size={28} color="gray" />
             </TouchableOpacity>
+            <View style={styles.dataDate}>
+              <View>
+                <Text style={styles.label}>Check-in Date</Text>
+                <Text style={styles.value}>{formatDate(startDate)}</Text>
+              </View>
+            </View>
+          </View>
+          {toggleStartDate && (
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display="default"
+              onChange={handleStartDateChange}
+            />
           )}
+
+          {/* Check-out Date */}
+          <View style={styles.date}>
+            <TouchableOpacity onPress={() => setToggleStartDate(true)}>
+              <MaterialCommunityIcons name="calendar-edit" size={28} color="gray" />
+            </TouchableOpacity>
+            <View style={styles.dataDate}>
+              <View>
+                <Text style={styles.label}>Check-out Date</Text>
+                <Text style={styles.value}>{formatDate(endDate)}</Text>
+              </View>
+            </View>
+          </View>
+          {toggleEndDate && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display="default"
+              onChange={handleEndDateChange}
+            />
+          )}
+
+          <View>
+            <TextInput placeholder="Tracker Code" style={styles.input} />
+          </View>
+
+          <View style={styles.infoCard}>
+            <Text style={styles.label}>Ticket Price</Text>
+            <Text style={styles.value}>Rp. 500.000</Text>
+          </View>
+
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Book Now</Text>
+          </TouchableOpacity>
         </View>
-      ))}
-
-      <TouchableOpacity style={styles.addButton} onPress={handleAddPerson}>
-        <Text style={styles.addButtonText}>Add Hiker</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.purchaseButton} onPress={handlePurchase}>
-        <Text style={styles.purchaseButtonText}>Buy Tickets</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 20,
-    marginTop: 20,
+    flex: 1,
     backgroundColor: "#f3f4f6",
-    alignItems: "center",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 20,
-  },
-  personContainer: {
+  logo: {
+    position: "absolute",
+    bottom: 0,
     width: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
+    height: 300,
+  },
+  containerTransaction: {
+    position: "absolute",
+    backgroundColor: "#fff",
+    right: 20,
+    top: 100,
+    left: 20,
+    height: "60%",
+    borderRadius: 20,
+    paddingBottom: 30,
     shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     elevation: 5,
   },
-  personTitle: {
-    fontSize: 18,
+  content: {
+    padding: 30,
+  },
+  date: {
+    flexDirection: "row",
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  dataDate: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+  label: {
+    fontSize: 16,
+    color: "#555",
     fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 10,
+  },
+  value: {
+    fontSize: 16,
+    color: "#333",
+    marginTop: 5,
+  },
+  status: {
+    color: "#10b981",
+    fontWeight: "bold",
   },
   input: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 5,
-    padding: 10,
-    fontSize: 16,
-    color: "#374151",
-    marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#d1d5db",
-  },
-  removeButton: {
-    marginTop: 10,
-    backgroundColor: "#f87171",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  removeButtonText: {
-    color: "#ffffff",
-    fontWeight: "bold",
-  },
-  addButton: {
-    backgroundColor: "#3b82f6",
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
     padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-    width: "100%",
     marginBottom: 20,
   },
-  addButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
+  infoCard: {
+    backgroundColor: "#fafafa",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
   },
-  purchaseButton: {
+  button: {
     backgroundColor: "#10b981",
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 12,
     alignItems: "center",
-    width: "100%",
   },
-  purchaseButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
+  buttonText: {
+    color: "#fff",
     fontWeight: "bold",
   },
 });
 
-export default TicketPurchaseScreen;
+export default TransactionScreen;
