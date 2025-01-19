@@ -13,7 +13,7 @@ export const API_ENDPOINTS = {
       UPDATE_ME: `${BASE_URL}users`,
     },
     TRANSACTION: {
-      CREATE_TICKET: `${BASE_URL}transaction`,
+      CREATE_TICKET: `${BASE_URL}transactions`,
     },
 };
 
