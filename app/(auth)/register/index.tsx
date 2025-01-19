@@ -8,6 +8,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { API_ENDPOINTS } from '@/constants/Api';
 import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 
 type FormData = {
   email: string;
@@ -23,7 +24,7 @@ type FormData = {
 export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
+
   const { control, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
     defaultValues: {
       email: '',
@@ -40,10 +41,12 @@ export default function RegisterScreen() {
   const router = useRouter();
 
   const handleRegister = async (data: FormData) => {
+    console.log(data);
     try {
       const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER_CUSTOMER, data);
       const userData = response.data.data;
 
+      Alert.alert('Success', 'Registration successful!');
       router.replace('/(auth)/login');
     } catch (error) {
       console.error('Error during Register:', error);
@@ -95,6 +98,23 @@ export default function RegisterScreen() {
             <Controller
               control={control}
               name="password"
+              rules={{
+                minLength: {
+                  value: 8,
+                  message: 'Password must be at least 8 characters long',
+                },
+                pattern: {
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+                  message: 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
+                },
+                validate: (value) => {
+                  const invalidCharRegex = /[^A-Za-z\d@$!%*?&#]/;
+                  if (invalidCharRegex.test(value)) {
+                    return 'Password contains invalid characters';
+                  }
+                  return true;
+                },
+              }}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   style={styles.textInput}
@@ -109,7 +129,7 @@ export default function RegisterScreen() {
               <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="gray" />
             </TouchableOpacity>
           </View>
-          {errors.password && <Text style={styles.errorText}>This field is required</Text>}
+          {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
 
           {/* Full Name */}
           <Text style={styles.label}>Full Name</Text>
@@ -163,13 +183,20 @@ export default function RegisterScreen() {
           {/* Gender */}
           <Text style={styles.label}>Gender</Text>
           <Controller
+            defaultValue='MALE'
             control={control}
             name="gender"
             render={({ field: { onChange, value } }) => (
-              <TextInput style={styles.input} placeholder="Gender" value={value} onChangeText={onChange} />
+              <Picker
+                selectedValue={value}
+                onValueChange={onChange}
+                style={styles.input}
+              >
+                <Picker.Item label="MALE" value="MALE" />
+                <Picker.Item label="FEMALE" value="FEMALE" />
+              </Picker>
             )}
           />
-          {errors.gender && <Text style={styles.errorText}>This field is required</Text>}
 
           {/* Phone */}
           <Text style={styles.label}>Phone</Text>
@@ -307,3 +334,4 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
