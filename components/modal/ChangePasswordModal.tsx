@@ -12,6 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_ENDPOINTS } from "@/constants/Api";
 import axios from "axios";
+import { FontAwesome } from "@expo/vector-icons";
 
 interface ChangePasswordData {
   password: string;
@@ -58,11 +59,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         },
       });
 
-      if( response.data.status === "success" ) {
-        Alert.alert("Success", "Password changed successfully!");
-      } else {
-        Alert.alert("Error", response.data.message);
-      }
+      Alert.alert("Success", "Password changed successfully!");
       setModalVisible(false);
     } catch (error: any) {
       console.error("Error changing password:", error);
@@ -90,6 +87,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 value: 6,
                 message: "Current password must be at least 6 characters long",
               },
+              pattern: {
+                value: /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[^\s]{8,}$/,
+                message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and no spaces.",
+              },
             }}
             render={({ field: { onChange, value } }) => (
               <View>
@@ -105,7 +106,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   style={styles.showHideButton}
                   onPress={() => setShowPassword(!showPassword)}
                 >
-                  <Text style={styles.showHideText}>{showPassword ? "Hide" : "Show"}</Text>
+                  <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="gray" />
                 </TouchableOpacity>
               </View>
             )}
@@ -124,9 +125,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 message: "New password must be at least 8 characters long",
               },
               pattern: {
-                value: /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$/,
-                message: "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
-              }
+                value: /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[^\s]{8,}$/,
+                message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and no spaces.",
+              },
             }}
             render={({ field: { onChange, value } }) => (
               <View>
@@ -142,7 +143,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   style={styles.showHideButton}
                   onPress={() => setShowNewPassword(!showNewPassword)}
                 >
-                  <Text style={styles.showHideText}>{showNewPassword ? "Hide" : "Show"}</Text>
+                  <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="gray" />
                 </TouchableOpacity>
               </View>
             )}
@@ -158,6 +159,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               required: "Please confirm your new password",
               validate: (value) =>
                 value === getValues("newPassword") || "Passwords do not match",
+              pattern: {
+                value: /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z])[^\s]{8,}$/,
+                message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and no spaces.",
+              },
             }}
             render={({ field: { onChange, value } }) => (
               <View>
@@ -173,9 +178,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                   style={styles.showHideButton}
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  <Text style={styles.showHideText}>
-                    {showConfirmPassword ? "Hide" : "Show"}
-                  </Text>
+                  <FontAwesome name={showPassword ? 'eye' : 'eye-slash'} size={20} color="gray" />
                 </TouchableOpacity>
               </View>
             )}

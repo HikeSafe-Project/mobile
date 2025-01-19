@@ -211,7 +211,7 @@ const EditProfileScreen: React.FC = () => {
         />
         {errors.address && <Text style={styles.errorText}>{errors.address.message}</Text>}
 
-        <ChangePasswordModal modalVisible={showModal} setModalVisible={setShowModal} control={control} errors={errors} />
+        <ChangePasswordModal modalVisible={showModal} setModalVisible={setShowModal} />
 
         <TouchableOpacity
           style={styles.changePasswordButton}
@@ -292,6 +292,18 @@ const styles = StyleSheet.create({
   },
   errorInput: {
     borderColor: "#EF4444",
+  },
+  changePasswordButton: {
+    backgroundColor: "#E5E7EB",
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  changePasswordButtonText: {
+    color: "#1F2937",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
