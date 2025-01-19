@@ -37,7 +37,7 @@ const MapMarkers = ({ devices }: Props) => {
           description={`Lokasi: ${device.latitude}, ${device.longitude}`}
           onPress={() => handleMarkerPress(device)}
         >
-          <FontAwesome name="users" size={30} color="blue" />
+          <FontAwesome name="map-marker" size={30} color="lime" />
         </Marker>
       ))}
     </>
