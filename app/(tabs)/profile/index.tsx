@@ -42,7 +42,7 @@ const ProfileScreen = () => {
     const fetchProfile = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        const response = await axios.get(API_ENDPOINTS.USER.ME, {
+        const response = await axios.get(API_ENDPOINTS.AUTH.ME, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

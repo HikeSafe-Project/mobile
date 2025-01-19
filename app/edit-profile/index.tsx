@@ -16,6 +16,7 @@ import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
+import ChangePasswordModal from "@/components/modal/ChangePasswordModal";
 
 interface Profile {
   fullName: string;
@@ -42,7 +43,8 @@ const EditProfileScreen: React.FC = () => {
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedGender, setSelectedGender] = useState("Male");
+  const [selectedGender, setSelectedGender] = useState("MALE");
+  const [showModal, setShowModal] = useState(false);
 
   const navigation = useNavigation();
 
@@ -51,7 +53,7 @@ const EditProfileScreen: React.FC = () => {
       try {
         const token = await AsyncStorage.getItem("token");
         if (token) {
-          const response = await axios.get(`${API_ENDPOINTS.USER.ME}`, {
+          const response = await axios.get(`${API_ENDPOINTS.AUTH.ME}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -208,6 +210,15 @@ const EditProfileScreen: React.FC = () => {
           )}
         />
         {errors.address && <Text style={styles.errorText}>{errors.address.message}</Text>}
+
+        <ChangePasswordModal modalVisible={showModal} setModalVisible={setShowModal} control={control} errors={errors} />
+
+        <TouchableOpacity
+          style={styles.changePasswordButton}
+          onPress={() => setShowModal(true)}
+        >
+          <Text style={styles.changePasswordButtonText}>Change Password</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.saveButton} onPress={handleSubmit(onSubmit)}>
           <Text style={styles.saveButtonText}>Save</Text>

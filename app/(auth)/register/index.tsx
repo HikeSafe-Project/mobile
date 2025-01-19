@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Image, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Image, ScrollView, Platform } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -32,7 +32,7 @@ export default function RegisterScreen() {
       fullName: '',
       birthDate: '',
       nik: '',
-      gender: '',
+      gender: 'MALE',
       phone: '',
       address: '',
     },
@@ -41,26 +41,39 @@ export default function RegisterScreen() {
   const router = useRouter();
 
   const handleRegister = async (data: FormData) => {
-    console.log(data);
+    // Check if any required fields are empty
+    const emptyFields = Object.keys(data).filter(key => !data[key as keyof FormData]);
+
+    console.log('Empty fields:', data);
+  
+    if (emptyFields.length > 0) {
+      Alert.alert('Error', 'All fields must be filled in!');
+      return; // Prevent form submission if any field is empty
+    }
+  
     try {
       const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER_CUSTOMER, data);
       const userData = response.data.data;
-
+  
       Alert.alert('Success', 'Registration successful!');
       router.replace('/(auth)/login');
-    } catch (error) {
-      console.error('Error during Register:', error);
-      Alert.alert('Error', 'Something went wrong!');
+    } catch (error: any) {
+      const emailError = error?.response?.data?.errors?.find((err: any) => err.email && err.email.includes('email already exist'));
+  
+      if (emailError) {
+        Alert.alert('Error', 'This email is already registered.');
+      } else {
+        Alert.alert('Error', 'Something went wrong!');
+      }
     }
   };
 
-  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+  const handleDateChange = (event: any, selectedDate: any) => {
     const currentDate = selectedDate || new Date();
-    setShowDatePicker(false);
-    // Update the form value for birthDate
+    setShowDatePicker(Platform.OS === 'ios');
     setValue('birthDate', currentDate.toISOString().split('T')[0]);
-  };
-
+  }
+  
   return (
     <React.Fragment>
       <StatusBar style="auto" />

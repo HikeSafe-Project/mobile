@@ -1,54 +1,85 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import ButtonCom from '@/components/ui/Button';
-
-const historyData = [
-  { id: '1', location: 'Gunung Rinjani', date: '15 Januari 2025' },
-  { id: '2', location: 'Gunung Semeru', date: '12 Desember 2024' },
-  { id: '3', location: 'Gunung Bromo', date: '5 November 2024' },
-];
+import AnimatedButton from '@/components/ui/AnimatedButton';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ENDPOINTS } from '@/constants/Api';
 
 export default function HomeScreen() {
+  const [username, setUsername] = useState('John Doe');
+  const [stats, setStats] = useState({
+    hikes: 0,
+    mountains: 0,
+    hours: 0,
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = await AsyncStorage.getItem('token');
+      
+      if (token) {
+        try {
+          const response = await axios.get(`${API_ENDPOINTS.AUTH.ME}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const userData = response.data.data;
+          setUsername(userData.fullName);
+
+          // Contoh data statistik (API Endpoint atau Mock Data)
+          const statsResponse = await axios.get(`${API_ENDPOINTS.STATS}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setStats(statsResponse.data);
+        } catch (error) {
+          console.error('Error fetching user or stats data:', error);
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
+
   return (
     <View style={styles.container}>
+      {/* Bagian Atas */}
       <View style={styles.topSection}>
         <View style={styles.header}>
           <View style={styles.greeting}>
-            <Text style={styles.helloText}>Hello, Username</Text>
-            <Text style={styles.title}>Track Your Advanture</Text>
+            <Text style={styles.helloText}>Hello, {username}</Text>
+            <Text style={styles.title}>Track Your Adventure</Text>
           </View>
           <Image source={require('@/assets/images/Illustration.png')} style={styles.image} />
         </View>
 
-        <ButtonCom 
-          textStyle={{ paddingVertical: 8, paddingHorizontal: 5, fontSize: 18 }}
-          variant='primary'
-        >
-          <Link href="/tracking">
-            Track Your Hiking History
-          </Link>
-        </ButtonCom>
+        <AnimatedButton />
       </View>
 
+      {/* Bagian Bawah untuk Statistik */}
       <View style={styles.bottomSection}>
-        <Text style={styles.historyTitle}>History</Text>
-        <FlatList
-          data={historyData}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.historyItem}>
-              <FontAwesome5 name="map-marker-alt" size={20} color={Colors.primary} />
-              <View style={styles.historyTextContainer}>
-                <Text style={styles.historyLocation}>{item.location}</Text>
-                <Text style={styles.historyDate}>{item.date}</Text>
-              </View>
-            </View>
-          )}
-          ListEmptyComponent={<Text style={styles.emptyText}>No history found</Text>}
-        />
+        <Text style={styles.statsTitle}>Your Hiking Statistics</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <FontAwesome5 name="hiking" size={30} color={Colors.primary} />
+            <Text style={styles.statValue}>{stats.hikes}</Text>
+            <Text style={styles.statLabel}>Total Hikes</Text>
+          </View>
+          <View style={styles.statItem}>
+            <FontAwesome5 name="mountain" size={30} color={Colors.primary} />
+            <Text style={styles.statValue}>{stats.mountains}</Text>
+            <Text style={styles.statLabel}>Mountains Climbed</Text>
+          </View>
+          <View style={styles.statItem}>
+            <FontAwesome5 name="clock" size={30} color={Colors.primary} />
+            <Text style={styles.statValue}>{stats.hours}</Text>
+            <Text style={styles.statLabel}>Hours Spent</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -76,7 +107,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 40,
+    marginTop: 40,
+    marginBottom: 80,
   },
   greeting: {
     flex: 1,
@@ -101,64 +133,44 @@ const styles = StyleSheet.create({
     height: 200,
     right: -50,
   },
-  button: {
-    marginTop: 20,
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
   bottomSection: {
     flex: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
   },
-  historyTitle: {
+  statsTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#374151',
-    marginBottom: 15,
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  historyItem: {
+  statsContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
     alignItems: 'center',
-    marginBottom: 15,
-    padding: 15,
+    backgroundColor: '#E3F2FD',
+    padding: 20,
     borderRadius: 10,
-    backgroundColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 3,
+    width: 100,
   },
-  historyTextContainer: {
-    marginLeft: 10,
-  },
-  historyLocation: {
-    fontSize: 16,
-    fontWeight: '600',
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#1F2937',
+    marginTop: 10,
   },
-  historyDate: {
+  statLabel: {
     fontSize: 14,
     color: '#6B7280',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#9CA3AF',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 5,
   },
 });

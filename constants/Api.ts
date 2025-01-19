@@ -4,11 +4,12 @@ const BASE_URL = "https://dev-haven.mahesvara.me/api/v1/";
 
 export const API_ENDPOINTS = {
     AUTH: {
-        REGISTER_CUSTOMER: `${BASE_URL}auth/register-customer`,
-        LOGIN: `${BASE_URL}auth/login`,
+      REGISTER_CUSTOMER: `${BASE_URL}auth/register-customer`,
+      LOGIN: `${BASE_URL}auth/login`,
+      ME: `${BASE_URL}auth/me`,
+      CHANGE_PASSWORD: `${BASE_URL}auth/password/update`,
     },
     USER: {
-      ME: `${BASE_URL}auth/me`,
       UPDATE_ME: `${BASE_URL}users`,
     },
     TRANSACTION: {
