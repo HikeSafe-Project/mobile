@@ -9,6 +9,10 @@ interface DateFilterModalProps {
   onClose: () => void;
   onStartDateChange: (date: string) => void;
   onEndDateChange: (date: string) => void;
+  showStartDatePicker: boolean;
+  showEndDatePicker: boolean;
+  onStartDatePickerChange: (event: any, selectedDate?: Date) => void;
+  onEndDatePickerChange: (event: any, selectedDate?: Date) => void;
 }
 
 export default function DateFilterModal({

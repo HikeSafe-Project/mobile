@@ -205,11 +205,14 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
+    backgroundColor: "#fff",
+    borderColor: Colors.primary,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.primary,
   },
   transactionId: {
     fontWeight: "600",
@@ -239,7 +242,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   ticket: {
-    backgroundColor: "#f9f9f9",
     borderRadius: 8,
     padding: 10,
     marginBottom: 5,
