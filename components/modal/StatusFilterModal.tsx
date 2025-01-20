@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Modal, View, Text, TouchableOpacity, Button, StyleSheet } from "react-native";
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { MaterialIcons } from "@expo/vector-icons";
 
 interface StatusFilterModalProps {
   visible: boolean;
@@ -20,7 +21,12 @@ const StatusFilterModal: React.FC<StatusFilterModalProps> = ({ visible, onClose,
   return (
     <Modal visible={visible} onRequestClose={onClose} animationType="slide" transparent={true}>
       <View style={styles.modal}>
-        <Text style={styles.filterLabel}>Select Status</Text>
+        <View style={styles.header}>
+          <Text style={styles.filterLabel}>Select Status</Text>
+          <TouchableOpacity onPress={onClose}>
+            <MaterialIcons name="close" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.optionsContainer}>
           {["ALL", "DONE", "CANCELLED", "START", "PENDING", "BOOKED"].map((status) => (
             <TouchableOpacity
@@ -40,7 +46,6 @@ const StatusFilterModal: React.FC<StatusFilterModalProps> = ({ visible, onClose,
             </TouchableOpacity>
           ))}
         </View>
-        <Button title="Close" onPress={onClose} color={Colors.primary} />
       </View>
     </Modal>
   );
@@ -50,16 +55,22 @@ const styles = StyleSheet.create({
   modal: {
     backgroundColor: "#fff",
     padding: 20,
-    height: "50%",
+    height: "60%",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     marginTop: "auto",
   },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 20,
+  },
   filterLabel: {
     fontWeight: "600",
     fontSize: 18,
-    marginBottom: 20,
   },
   optionsContainer: {
     width: '100%',

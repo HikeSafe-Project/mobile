@@ -1,94 +1,176 @@
-import React from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, Button, StyleSheet } from "react-native";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import { Colors } from "@/constants/Colors";
+import React, { useState } from "react";
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Colors } from "@/constants/Colors";
 
 interface DateFilterModalProps {
   visible: boolean;
   onClose: () => void;
   onStartDateChange: (date: string) => void;
   onEndDateChange: (date: string) => void;
-  showStartDatePicker: boolean;
-  showEndDatePicker: boolean;
-  onStartDatePickerChange: (event: DateTimePickerEvent, selectedDate?: Date) => void;
-  onEndDatePickerChange: (event: DateTimePickerEvent, selectedDate?: Date) => void;
 }
 
-const DateFilterModal: React.FC<DateFilterModalProps> = ({
+export default function DateFilterModal({
   visible,
   onClose,
   onStartDateChange,
   onEndDateChange,
-  showStartDatePicker,
-  showEndDatePicker,
-  onStartDatePickerChange,
-  onEndDatePickerChange,
-}) => {
+}: DateFilterModalProps) {
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartPicker(false);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+      onStartDateChange(selectedDate.toISOString().split("T")[0]);
+    }
+  };
+
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndPicker(false);
+    if (selectedDate) {
+      setEndDate(selectedDate);
+      onEndDateChange(selectedDate.toISOString().split("T")[0]);
+    }
+  };
+
+  const clearFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    onStartDateChange("");
+    onEndDateChange("");
+  };
+
   return (
-    <Modal visible={visible} onRequestClose={onClose} animationType="slide" transparent={true}>
-      <View style={styles.modal}>
-        {/* Close Button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <MaterialIcons name="close" size={24} color="#000" />
-        </TouchableOpacity>
+    <Modal visible={visible} transparent={true} animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.header}>
+            <Text style={styles.modalTitle}>Filter by Date</Text>
+            <TouchableOpacity onPress={onClose}>
+              <MaterialIcons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
 
-        <Text style={styles.filterLabel}>Start Date</Text>
-        <TouchableOpacity onPress={() => onStartDateChange(new Date().toISOString().split("T")[0])}>
-          <TextInput style={styles.input} placeholder="Start Date (YYYY-MM-DD)" editable={false} />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setShowStartPicker(true)}
+          >
+            <Text style={styles.dateButtonText}>
+              {startDate ? `Start Date: ${startDate.toISOString().split("T")[0]}` : "Pick Start Date"}
+            </Text>
+          </TouchableOpacity>
 
-        <Text style={styles.filterLabel}>End Date</Text>
-        <TouchableOpacity onPress={() => onEndDateChange(new Date().toISOString().split("T")[0])}>
-          <TextInput style={styles.input} placeholder="End Date (YYYY-MM-DD)" editable={false} />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setShowEndPicker(true)}
+          >
+            <Text style={styles.dateButtonText}>
+              {endDate ? `End Date: ${endDate.toISOString().split("T")[0]}` : "Pick End Date"}
+            </Text>
+          </TouchableOpacity>
 
-        <Button title="Apply Filters" onPress={onClose} color={Colors.primary} />
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
+              <Text style={styles.clearButtonText}>Clear</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>Apply</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        {showStartDatePicker && (
-          <DateTimePicker value={new Date()} mode="date" is24Hour={true} display="default" onChange={onStartDatePickerChange} />
+        {showStartPicker && (
+          <DateTimePicker
+            value={startDate || new Date()}
+            mode="date"
+            display="calendar"
+            onChange={handleStartDateChange}
+          />
         )}
 
-        {showEndDatePicker && (
-          <DateTimePicker value={new Date()} mode="date" is24Hour={true} display="default" onChange={onEndDatePickerChange} />
+        {showEndPicker && (
+          <DateTimePicker
+            value={endDate || new Date()}
+            mode="date"
+            display="calendar"
+            onChange={handleEndDateChange}
+          />
         )}
       </View>
     </Modal>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  modal: {
-    backgroundColor: "#fff",
-    padding: 20,
-    height: "50%",
-    borderRadius: 10,
+  modalOverlay: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+},
+modalContainer: {
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: 20,
     marginTop: "auto",
-    position: "relative", // Needed for the close button positioning
+    alignItems: "center",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  dateButton: {
+    width: "100%",
+    padding: 10,
+    borderColor: Colors.primary,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  dateButtonText: {
+    color: Colors.primary,
+    fontSize: 16,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    marginTop: 20,
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  clearButton: {
+    padding: 10,
+    backgroundColor: "#f44336",
+    borderRadius: 8,
+    flex: 1,
+    marginRight: 10,
+    alignItems: "center",
+  },
+  clearButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
   closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    zIndex: 1,
-  },
-  filterLabel: {
-    fontWeight: "600",
-    fontSize: 16,
-    marginBottom: 15,
-  },
-  input: {
-    height: 45,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    marginBottom: 10,
+    padding: 10,
+    backgroundColor: Colors.primary,
     borderRadius: 8,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    backgroundColor: "#fff",
+    flex: 1,
+    marginLeft: 10,
+    alignItems: "center",
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
-
-export default DateFilterModal;
