@@ -84,7 +84,8 @@ export default function TransactionScreen() {
       );
     }
 
-    return filtered;
+    // Sort transactions by createdAt in descending order
+    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [data, statusFilter, startDateFilter, endDateFilter]);
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -145,14 +146,14 @@ export default function TransactionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.filterContainer}>
-            <TouchableOpacity onPress={() => setStatusModalVisible(true)} style={styles.filterButton}>
-                <Text style={styles.filterButtonText}>Filter by Status</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.filterButton}>
-                <Text style={styles.filterButtonText}>Filter by Date</Text>
-            </TouchableOpacity>
-        </View>
+      <View style={styles.filterContainer}>
+        <TouchableOpacity onPress={() => setStatusModalVisible(true)} style={styles.filterButton}>
+          <Text style={styles.filterButtonText}>Filter by Status</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.filterButton}>
+          <Text style={styles.filterButtonText}>Filter by Date</Text>
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         data={filteredTransactions}
@@ -185,9 +186,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   filterContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   filterButton: {
     backgroundColor: Colors.primary,
