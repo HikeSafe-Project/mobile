@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_ENDPOINTS } from "@/constants/Api";
@@ -8,6 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import StatusFilterModal from "@/components/modal/StatusFilterModal";
 import DateFilterModal from "@/components/modal/DateFilterModal";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { useRouter } from "expo-router";
+import { useNavigation } from "expo-router";
 
 interface Ticket {
   id: string;
@@ -38,6 +47,9 @@ export default function TransactionScreen() {
   const [statusModalVisible, setStatusModalVisible] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
+  const router = useRouter();
+  const navigate = useNavigation();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -48,11 +60,14 @@ export default function TransactionScreen() {
           return;
         }
 
-        const response = await axios.get(API_ENDPOINTS.TRANSACTION.GET_ALL_TRANSACTIONS, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          API_ENDPOINTS.TRANSACTION.GET_ALL_TRANSACTIONS,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         setData(response.data.data || []);
       } catch (error) {
@@ -69,26 +84,35 @@ export default function TransactionScreen() {
     let filtered = data;
 
     if (statusFilter !== "ALL") {
-      filtered = filtered.filter((transaction) => transaction.status === statusFilter);
+      filtered = filtered.filter(
+        (transaction) => transaction.status === statusFilter
+      );
     }
 
     if (startDateFilter) {
       filtered = filtered.filter(
-        (transaction) => new Date(transaction.startDate) >= new Date(startDateFilter)
+        (transaction) =>
+          new Date(transaction.startDate) >= new Date(startDateFilter)
       );
     }
 
     if (endDateFilter) {
       filtered = filtered.filter(
-        (transaction) => new Date(transaction.endDate) <= new Date(endDateFilter)
+        (transaction) =>
+          new Date(transaction.endDate) <= new Date(endDateFilter)
       );
     }
 
-    // Sort transactions by createdAt in descending order
-    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return filtered.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }, [data, statusFilter, startDateFilter, endDateFilter]);
 
-  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const handleDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
     const currentDate = selectedDate || new Date();
     if (showStartDatePicker) {
       setStartDateFilter(currentDate.toISOString().split("T")[0]);
@@ -98,6 +122,13 @@ export default function TransactionScreen() {
     setShowStartDatePicker(false);
     setShowEndDatePicker(false);
   };
+
+    const navigateToBookDetail = (transactionId: string) => {
+      router.push({
+        pathname: "(transaction)/detail",
+        params: { transactionId },
+      });
+    };
 
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const statusColor = {
@@ -109,34 +140,40 @@ export default function TransactionScreen() {
     }[item.status] || "#555";
 
     return (
-      <View style={styles.card}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.transactionId}>Transaction</Text>
-            <Text style={styles.dateText}>{item.createdAt.split("T")[0]}</Text>
-          </View>
-          <Text style={[styles.status, { color: statusColor }]}>{item.status}</Text>
-        </View>
-        <View style={styles.dates}>
-          <Text style={styles.date}>Start: {item.startDate} - End: {item.endDate}</Text>
-        </View>
-        <View style={styles.tickets}>
-          <Text style={styles.sectionTitle}>Tickets:</Text>
-          {item.tickets.map((ticket) => (
-            <View key={ticket.id} style={styles.ticket}>
-              <Text>Hiker: {ticket.hikerName}</Text>
-              <Text>Address: {ticket.address}</Text>
-              <Text>Phone: {ticket.phoneNumber}</Text>
+      <TouchableOpacity onPress={() => navigateToBookDetail(item.id)}>
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.transactionId}>Transaction</Text>
+              <Text style={styles.dateText}>{item.createdAt.split("T")[0]}</Text>
             </View>
-          ))}
+            <Text style={[styles.status, { color: statusColor }]}>
+              {item.status}
+            </Text>
+          </View>
+          <View style={styles.dates}>
+            <Text style={styles.date}>
+              Start: {item.startDate} - End: {item.endDate}
+            </Text>
+          </View>
+          <View style={styles.tickets}>
+            <Text style={styles.sectionTitle}>Tickets:</Text>
+            {item.tickets.map((ticket) => (
+              <View key={ticket.id} style={styles.ticket}>
+                <Text>Hiker: {ticket.hikerName}</Text>
+                <Text>Address: {ticket.address}</Text>
+                <Text>Phone: {ticket.phoneNumber}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.footer}>
+            <Text style={styles.amountLabel}>Total Amount</Text>
+            <Text style={styles.amount}>
+              Rp{new Intl.NumberFormat("id-ID").format(item.totalAmount)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.footer}>
-          <Text style={styles.amountLabel}>Total Amount</Text>
-          <Text style={styles.amount}>
-            Rp{new Intl.NumberFormat("id-ID").format(item.totalAmount)}
-          </Text>
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -147,10 +184,16 @@ export default function TransactionScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.filterContainer}>
-        <TouchableOpacity onPress={() => setStatusModalVisible(true)} style={styles.filterButton}>
+        <TouchableOpacity
+          onPress={() => setStatusModalVisible(true)}
+          style={styles.filterButton}
+        >
           <Text style={styles.filterButtonText}>Filter by Status</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.filterButton}>
+        <TouchableOpacity
+          onPress={() => setModalVisible(true)}
+          style={styles.filterButton}
+        >
           <Text style={styles.filterButtonText}>Filter by Date</Text>
         </TouchableOpacity>
       </View>
@@ -179,6 +222,7 @@ export default function TransactionScreen() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

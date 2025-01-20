@@ -11,7 +11,7 @@ export default function AuthLayout() {
     <ThemeProvider value={DefaultTheme}>
       <Stack>
         <Stack.Screen name="history/index" options={{ headerShown: false }} />
-        <Stack.Screen name="detail/index" options={{ headerShown: false }} />
+        <Stack.Screen name="detail/index" options={{ headerTitle: 'Detail Transaction' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

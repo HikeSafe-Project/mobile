@@ -16,6 +16,9 @@ export const API_ENDPOINTS = {
       CREATE_TICKET: `${BASE_URL}transactions`,
       GET_ALL_TRANSACTIONS: `${BASE_URL}transactions/user`,
     },
+    PAYMENT: {
+      CREATE_PAYMENT: `${BASE_URL}payments`,
+    }
 };
 
 const api = axios.create({

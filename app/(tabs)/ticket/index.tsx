@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Platform,
   Image,
+  Alert,
 } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -68,7 +69,7 @@ const TransactionScreen: React.FC = () => {
       });
 
       router.replace({
-        pathname: "(transaction)/hikersDetail",
+        pathname: "(transaction)/detail",
         params: {
           transactionId: response.data.data.id,
         },
@@ -76,7 +77,9 @@ const TransactionScreen: React.FC = () => {
 
       console.log("Transaction submitted successfully:", response.data);
     } catch (error) {
-      console.error("Error submitting transaction:", error);
+      if(error){
+        Alert.alert("Failed", "Failed to submit transaction. Check the hiker details and try again.");
+      }
     }
   };
 
