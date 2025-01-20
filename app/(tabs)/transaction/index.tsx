@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
+  RefreshControl,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,7 +17,6 @@ import StatusFilterModal from "@/components/modal/StatusFilterModal";
 import DateFilterModal from "@/components/modal/DateFilterModal";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useNavigation } from "expo-router";
 
 interface Ticket {
   id: string;
@@ -39,6 +39,7 @@ interface Transaction {
 export default function TransactionScreen() {
   const [data, setData] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [startDateFilter, setStartDateFilter] = useState<string>("");
   const [endDateFilter, setEndDateFilter] = useState<string>("");
@@ -48,37 +49,42 @@ export default function TransactionScreen() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const router = useRouter();
-  const navigate = useNavigation();
+
+  const fetchData = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        console.error("Token not found");
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(
+        API_ENDPOINTS.TRANSACTION.GET_ALL_TRANSACTIONS,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setData(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          console.error("Token not found");
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(
-          API_ENDPOINTS.TRANSACTION.GET_ALL_TRANSACTIONS,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setData(response.data.data || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+  };
 
   const filteredTransactions = useMemo(() => {
     let filtered = data;
@@ -123,12 +129,12 @@ export default function TransactionScreen() {
     setShowEndDatePicker(false);
   };
 
-    const navigateToBookDetail = (transactionId: string) => {
-      router.push({
-        pathname: "(transaction)/detail",
-        params: { transactionId },
-      });
-    };
+  const navigateToBookDetail = (transactionId: string) => {
+    router.push({
+      pathname: "(transaction)/detail",
+      params: { transactionId },
+    });
+  };
 
   const renderTransaction = ({ item }: { item: Transaction }) => {
     const statusColor = {
@@ -202,6 +208,13 @@ export default function TransactionScreen() {
         data={filteredTransactions}
         renderItem={renderTransaction}
         keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[Colors.primary]}
+          />
+        }
       />
 
       <StatusFilterModal

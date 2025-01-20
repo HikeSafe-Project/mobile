@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Button, TouchableOpacity } from "react-native";
 import axios from "axios";
@@ -18,7 +18,7 @@ interface TransactionDetail {
   id: string;
   startDate: string;
   endDate: string;
-  status: "START" | "DONE" | "CANCELLED" | "PENDING";
+  status: "START" | "DONE" | "CANCELLED" | "PENDING" | "BOOKED";
   totalAmount: number;
   tickets: Ticket[];
   createdAt: string;
@@ -94,14 +94,6 @@ const BookDetailScreen: React.FC = () => {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      if (!token) {
-        console.error("Token not found.");
-        return;
-      }
-
-      console.log("Transaction ID:", transactionDetail.id);
-      console.log("Token:", token);
-
       const response = await axios.post(
         `${API_ENDPOINTS.PAYMENT.CREATE_PAYMENT}/${transactionDetail.id}/create-payment-link`,
         {},
@@ -114,11 +106,10 @@ const BookDetailScreen: React.FC = () => {
         }
       );
 
-      console.log("Payment link created successfully:", response.data);
+      if (response.data.data) {
+        const paymentLink = response.data.data;
 
-      if (response.data?.paymentLink) {
-        const paymentLink = response.data.paymentLink;
-        console.log("Redirecting to:", paymentLink);
+        router.push(paymentLink);
       }
     } catch (error: any) {
       console.error("Error creating payment link:", error.message);
@@ -150,13 +141,17 @@ const BookDetailScreen: React.FC = () => {
               {
                 fontWeight: "bold",
                 color:
-                  status === "START"
-                    ? "#4CAF50"
-                    : status === "DONE"
+                  status === "DONE"
                     ? "#2196F3"
                     : status === "CANCELLED"
                     ? "#f44336"
-                    : "#FF9800",
+                    : status === "PENDING"
+                    ? "#9E9E9E"
+                    : status === "START"
+                    ? "#4CAF50"
+                    : status === "BOOKED"
+                    ? "#FF9800"
+                    : "#555",
               },
             ]}
           >
