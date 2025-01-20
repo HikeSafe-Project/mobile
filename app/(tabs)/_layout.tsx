@@ -1,29 +1,29 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform, View, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Platform, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 
 const screens = [
   {
     name: "explore/index",
-    icon: "search" as const,
+    icon: "set-none",
   },
   {
     name: "ticket/index",
-    icon: "ticket" as const,
+    icon: "ticket",
   },
   {
     name: "index",
-    icon: "home" as const,
+    icon: "home",
   },
   {
-    name: "reels/index",
-    icon: "videocam" as const,
+    name: "transaction/index",
+    icon: "clipboard-text-outline",
   },
   {
     name: "profile/index",
-    icon: "person" as const,
+    icon: "face-man-profile",
   },
 ];
 
@@ -61,18 +61,18 @@ export default function TabLayout() {
                     justifyContent: "center",
                     width: 40,
                     height: 40,
-                    overflow: 'visible',
+                    overflow: "visible",
                     transform: [{ scale }],
                   }}
                 >
-                  <Ionicons
-                    name={screen.icon}
+                  <MaterialCommunityIcons
+                    name={screen.icon as any}
                     color={focused ? "white" : "gray"}
                     size={24}
                   />
                 </View>
               );
-            }
+            },
           }}
         />
       ))}

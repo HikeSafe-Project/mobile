@@ -57,8 +57,8 @@ const AddHikerModal: React.FC<{
                   style={styles.picker}
                 >
                   <Picker.Item label="Select ID Type" value="" />
-                  <Picker.Item label="KTP" value="ktp" />
-                  <Picker.Item label="Passport" value="passport" />
+                  <Picker.Item label="NIK" value="NIK" />
+                  <Picker.Item label="Passport" value="PASSPORT" />
                 </Picker>
                 <TextInput
                   style={styles.input}

@@ -15,6 +15,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_ENDPOINTS } from "@/constants/Api";
 import AddHikerModal from "@/components/modal/AddHikerModal";
+import { router } from "expo-router";
 
 const TransactionScreen: React.FC = () => {
   const [startDate, setStartDate] = useState<Date>(new Date());
@@ -57,12 +58,23 @@ const TransactionScreen: React.FC = () => {
       })),
     };
 
+    console.log("Transaction data:", transactionData);
+
     try {
       const response = await axios.post(API_ENDPOINTS.TRANSACTION.CREATE_TICKET, transactionData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      router.replace({
+        pathname: "(transaction)/hikersDetail",
+        params: {
+          transactionId: response.data.data.id,
+        },
+      })
+
+      console.log("Transaction submitted successfully:", response.data);
     } catch (error) {
       console.error("Error submitting transaction:", error);
     }

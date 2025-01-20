@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
     },
     TRANSACTION: {
       CREATE_TICKET: `${BASE_URL}transactions`,
+      GET_ALL_TRANSACTIONS: `${BASE_URL}transactions/user`,
     },
 };
 
