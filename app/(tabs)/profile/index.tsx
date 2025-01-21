@@ -19,7 +19,7 @@ interface Profile {
   email: string;
   birthDate: string;
   nik: string;
-  img: string;
+  imageUrl: string;
   gender: string;
   address: string;
 }
@@ -30,7 +30,7 @@ const ProfileScreen = () => {
     email: "",
     birthDate: "",
     nik: "",
-    img: "",
+    imageUrl: "",
     gender: "",
     address: "",
   });
@@ -48,6 +48,7 @@ const ProfileScreen = () => {
           },
         })
         const data = response.data;
+        console.log(data);
         setProfile(data.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -82,7 +83,7 @@ const ProfileScreen = () => {
       </View>
 
       <View style={styles.header}>
-        <Image source={{ uri: "https://lenox-pasifik.co.id/wp-content/uploads/2016/06/team-1-640x640.jpg"}} style={styles.profileImage} />
+        <Image source={{ uri: profile?.imageUrl }} style={styles.profileImage} />
         <Text style={styles.name}>{profile?.fullName}</Text>
         <Text style={styles.subInfo}>{profile?.email}</Text>
         <ButtonCom 
@@ -157,6 +158,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderWidth: 2,
     borderColor: Colors.primary,
+    backgroundColor: "#fff",
   },
   name: {
     fontSize: 22,

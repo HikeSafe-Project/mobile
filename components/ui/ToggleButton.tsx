@@ -14,7 +14,7 @@ const ToggleButton = ({ showGroups, toggleGroupList }: Props) => {
       onPress={toggleGroupList}
     >
       <Text style={styles.buttonText}>
-        {showGroups ? "Sembunyikan Kelompok" : "Tampilkan Kelompok"}
+        {showGroups ? "Hide History" : "Show History"}
       </Text>
     </TouchableOpacity>
   );

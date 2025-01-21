@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from "react";
+import React, { useState, useRef, useLayoutEffect, useEffect } from "react";
 import { View, StyleSheet, Animated } from "react-native";
 import MapView from "react-native-maps";
 import { Easing } from "react-native-reanimated";
@@ -6,67 +6,66 @@ import { useNavigation } from "expo-router";
 import MapMarkers from "@/components/ui/MapMarkers";
 import GroupList from "@/components/ui/GroupList";
 import ToggleButton from "@/components/ui/ToggleButton";
+import { API_ENDPOINTS } from "@/constants/Api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+
+type MarkerVisibility = {
+  [key: number]: boolean;
+};
 
 const TrackingScreen = () => {
-  const devices = [
-    {
-      id: 1,
-      groupName: "Group A",
-      hikers: [
-        { id: 1, name: "John Doe", age: 30 },
-        { id: 2, name: "Jane Smith", age: 25 },
-        { id: 3, name: "Emily Johnson", age: 28 },
-        { id: 4, name: "Mark Lee", age: 32 },
-        { id: 5, name: "Lucy Brown", age: 29 },
-      ],
-      latitude: -6.1754,
-      longitude: 106.8272,
-    },
-    {
-      id: 2,
-      groupName: "Group B",
-      hikers: [
-        { id: 6, name: "Jake White", age: 34 },
-        { id: 7, name: "Sophia Green", age: 27 },
-        { id: 8, name: "Alex King", age: 31 },
-        { id: 9, name: "Liam Harris", age: 29 },
-        { id: 10, name: "Olivia Scott", age: 33 },
-      ],
-      latitude: -7.7956,
-      longitude: 110.3695,
-    },
-    {
-      id: 3,
-      groupName: "Group C",
-      hikers: [
-        { id: 11, name: "Noah Davis", age: 35 },
-        { id: 12, name: "Emma Miller", age: 26 },
-        { id: 13, name: "Liam Wilson", age: 30 },
-        { id: 14, name: "Olivia Taylor", age: 28 },
-        { id: 15, name: "William Anderson", age: 32 },
-      ],
-      latitude: -6.1754,
-      longitude: 106.8272,
-    },
-    {
-      id: 4,
-      groupName: "Group D",
-      hikers: [
-        { id: 16, name: "Liam Thompson", age: 34 },
-        { id: 17, name: "Olivia Martinez", age: 27 },
-        { id: 18, name: "Noah Jackson", age: 31 },
-        { id: 19, name: "Emma Clark", age: 29 },
-        { id: 20, name: "William Lewis", age: 33 },
-      ],
-      latitude: -7.7956,
-      longitude: 110.3695,
-    },
-  ];
-
   const navigation = useNavigation();
   const mapRef = useRef<MapView>(null);
   const [showGroups, setShowGroups] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [history, setHistory] = useState([]);
+  const [showMarkers, setShowMarkers] = useState<MarkerVisibility>({});
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const response = await axios.get(
+          `${API_ENDPOINTS.TRANSACTION.GET_ALL_TRANSACTIONS}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const fetchedData = response.data.data;
+
+        const mappedHistory = fetchedData.map((transaction: any) => ({
+          id: transaction.id,
+          groupName: transaction.user.fullName,
+          startDate: transaction.startDate,
+          endDate: transaction.endDate,
+          hikers: transaction.tickets.map((ticket: any) => ({
+            id: ticket.id,
+            name: ticket.hikerName,
+            address: ticket.address,
+            phoneNumber: ticket.phoneNumber,
+          })),
+          coordinates: transaction.coordinates.filter(
+            (coord: any) =>
+              coord.latitude && coord.longitude
+          ),
+        }));
+
+        const initialVisibility = Object.fromEntries(
+          mappedHistory.map((group: any) => [group.id, true])
+        );
+
+        setHistory(mappedHistory);
+        setShowMarkers(initialVisibility);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+      }
+    };
+    fetchHistory();
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -96,6 +95,13 @@ const TrackingScreen = () => {
     }
   };
 
+  const toggleMarkerVisibility = (groupId: number) => {
+    setShowMarkers((prevState) => ({
+      ...prevState,
+      [groupId]: !prevState[groupId],
+    }));
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -109,14 +115,16 @@ const TrackingScreen = () => {
         }}
         mapType="satellite"
       >
-        <MapMarkers devices={devices} />
+        <MapMarkers histories={history} visibilityMap={showMarkers} />
       </MapView>
       <ToggleButton showGroups={showGroups} toggleGroupList={toggleGroupList} />
       {showGroups && (
         <GroupList
-          devices={devices}
+          histories={history}
           mapRef={mapRef}
           fadeAnim={fadeAnim}
+          toggleMarkerVisibility={toggleMarkerVisibility}
+          visibilityMap={showMarkers}
         />
       )}
     </View>
@@ -129,6 +137,11 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  controls: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 10,
   },
 });
 

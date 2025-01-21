@@ -214,7 +214,7 @@ const BookDetailScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
-      {status === "PENDING" && (
+      {status === "UNPAID" && (
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handlePayment}>
             <Text style={styles.buttonText}>Continue Payment</Text>
