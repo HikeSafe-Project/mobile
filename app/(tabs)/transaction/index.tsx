@@ -206,18 +206,24 @@ export default function TransactionScreen() {
         </ButtonCom>
       </View>
 
-      <FlatList
-        data={filteredTransactions}
-        renderItem={renderTransaction}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[Colors.primary]}
-          />
-        }
-      />
+      {filteredTransactions.length === 0 ? (
+        <View style={styles.noDataContainer}>
+          <Text style={styles.noDataText}>Don't have any transaction</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredTransactions}
+          renderItem={renderTransaction}
+          keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[Colors.primary]}
+            />
+          }
+        />
+      )}
 
       <StatusFilterModal
         visible={statusModalVisible}
@@ -321,5 +327,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: Colors.primary,
+  },
+    noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  noDataText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#555",
   },
 });
