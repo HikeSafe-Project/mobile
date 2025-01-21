@@ -13,14 +13,17 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show your real-time position on the map.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to show your real-time position on the map.",
-        "NSLocationAlwaysUsageDescription": "This app needs access to your location at all times to provide accurate navigation."
+        "NSLocationAlwaysUsageDescription": "This app needs access to your location at all times to provide accurate navigation.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to allow you to choose images."
       }
     },
     "android": {
       "package": "com.anonymous.Mobile",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ]
     },
     "plugins": [

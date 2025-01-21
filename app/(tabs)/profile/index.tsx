@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ButtonCom from "@/components/ui/Button";
 import { API_ENDPOINTS } from "@/constants/Api";
 import axios from "axios";
+import * as ImagePicker from 'expo-image-picker';
 
 interface Profile {
   fullName: string;
@@ -46,9 +47,8 @@ const ProfileScreen = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
+        });
         const data = response.data;
-        console.log(data);
         setProfile(data.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -61,6 +61,67 @@ const ProfileScreen = () => {
   const handleLogout = async () => {
     await AsyncStorage.removeItem('token');
     router.replace('/(auth)/login');
+  };
+
+  const handleImagePick = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      console.log('Hasil ImagePicker:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUrl = result.assets[0].uri;
+
+        setProfile((prevProfile) => ({
+          ...prevProfile,
+          imageUrl,
+        }));
+
+        console.log('Profile setelah update:', {
+          ...profile,
+          imageUrl,
+        });
+
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          console.error('Token tidak ditemukan');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', {
+          uri: imageUrl,
+          name: 'profile.jpg',
+          type: 'image/jpeg',
+        } as any);
+
+        const response = await axios.put(
+          `${API_ENDPOINTS.USER.UPDATE_IMAGE}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+
+        console.log('Response dari server:', response.data);
+      } else {
+        console.log('Pemilihan gambar dibatalkan');
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Kesalahan Axios:', error.response?.data);
+      } else {
+        console.error('Error saat memilih gambar atau mengupdate profile:', error);
+      }
+    }
   };
 
   return (
@@ -83,13 +144,13 @@ const ProfileScreen = () => {
       </View>
 
       <View style={styles.header}>
-        <Image source={{ uri: profile?.imageUrl }} style={styles.profileImage} />
+        <TouchableOpacity onPress={handleImagePick}>
+          <Image source={{ uri: profile?.imageUrl }} style={styles.profileImage} />
+        </TouchableOpacity>
         <Text style={styles.name}>{profile?.fullName}</Text>
         <Text style={styles.subInfo}>{profile?.email}</Text>
-        <ButtonCom 
-          variant='ghost' 
-        >
-            <Link href='/edit-profile'>Edit Profile</Link>
+        <ButtonCom variant='ghost'>
+          <Link href='/edit-profile'>Edit Profile</Link>
         </ButtonCom>
       </View>
 

@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
     },
     USER: {
       UPDATE_ME: `${BASE_URL}users`,
+      UPDATE_IMAGE: `${BASE_URL}users/update/image`,
     },
     TRANSACTION: {
       CREATE_TICKET: `${BASE_URL}transactions`,
