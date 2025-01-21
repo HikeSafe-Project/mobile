@@ -17,6 +17,7 @@ import StatusFilterModal from "@/components/modal/StatusFilterModal";
 import DateFilterModal from "@/components/modal/DateFilterModal";
 import { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
+import ButtonCom from "@/components/ui/Button";
 
 interface Ticket {
   id: string;
@@ -143,6 +144,7 @@ export default function TransactionScreen() {
       START: "#4CAF50",
       DONE: "#2196F3",
       PENDING: "#9E9E9E",
+      UNPAID: "#FFC107",
     }[item.status] || "#555";
 
     return (
@@ -190,18 +192,18 @@ export default function TransactionScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.filterContainer}>
-        <TouchableOpacity
+        <ButtonCom
+          variant="ghost"
           onPress={() => setStatusModalVisible(true)}
-          style={styles.filterButton}
         >
           <Text style={styles.filterButtonText}>Filter by Status</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </ButtonCom>
+        <ButtonCom
           onPress={() => setModalVisible(true)}
-          style={styles.filterButton}
+          variant="ghost"
         >
           <Text style={styles.filterButtonText}>Filter by Date</Text>
-        </TouchableOpacity>
+        </ButtonCom>
       </View>
 
       <FlatList
@@ -241,11 +243,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: "#fff",
   },
   filterContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 10,
   },
   filterButton: {
     backgroundColor: Colors.primary,
@@ -254,9 +258,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   filterButtonText: {
-    color: "#fff",
     textAlign: "center",
     fontSize: 16,
+    fontWeight: "thin",
+    color: Colors.primary,
   },
   card: {
     marginBottom: 15,

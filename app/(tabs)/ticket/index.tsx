@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,9 @@ const TransactionScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [hikers, setHikers] = useState<Array<any>>([
     { id: Date.now(), name: "", address: "", phoneNumber: "", identificationType: "", identificationNumber: "" },
+  ]);
+  const [price, setPrice] = useState<Array<any>>([
+    { priceType: "", price: "" },
   ]);
 
   const formatDate = (date: Date): string => {
@@ -83,6 +86,25 @@ const TransactionScreen: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const response = await axios.get(API_ENDPOINTS.PRICE.GET_ALL_PRICES, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log();
+        setPrice(response.data.data.map((price: any) => price));
+      } catch (error) {
+        console.error("Error fetching price:", error);
+      }
+    };
+
+    fetchPrice();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Image source={require("@/assets/images/mountainbackground.png")} style={styles.logo} />
@@ -94,7 +116,7 @@ const TransactionScreen: React.FC = () => {
             </TouchableOpacity>
             <View style={styles.dataDate}>
               <View>
-                <Text style={styles.label}>Check-in Date</Text>
+                <Text style={styles.label}>Start Date</Text>
                 <Text style={styles.value}>{formatDate(startDate)}</Text>
               </View>
             </View>
@@ -114,7 +136,7 @@ const TransactionScreen: React.FC = () => {
             </TouchableOpacity>
             <View style={styles.dataDate}>
               <View>
-                <Text style={styles.label}>Check-out Date</Text>
+                <Text style={styles.label}>End Date</Text>
                 <Text style={styles.value}>{formatDate(endDate)}</Text>
               </View>
             </View>
@@ -142,7 +164,14 @@ const TransactionScreen: React.FC = () => {
 
           <View style={styles.infoCard}>
             <Text style={styles.label}>Ticket Price</Text>
-            <Text style={styles.value}>Rp. 500.000</Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={{ ...styles.value, fontWeight: "bold" }}>Local </Text>
+              <Text style={{ ...styles.value }}>Rp{new Intl.NumberFormat("id-ID").format(price[0]?.price)}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <Text style={{ ...styles.value, fontWeight: "bold" }}>Foreigner </Text>
+              <Text style={{ ...styles.value }}>Rp{new Intl.NumberFormat("id-ID").format(price[1]?.price)}</Text>
+            </View>
           </View>
 
           <ButtonCom textStyle={{ padding: 5 }} variant="primary" onPress={handleSubmit}>
@@ -197,25 +226,23 @@ const styles = StyleSheet.create({
     marginBottom: 20, 
     alignItems: "center" 
   },
-  dataDate: { 
+  dataDate: {
     flex: 1, 
-    marginLeft: 10 
+    marginLeft: 10
   },
   infoCard: { 
-    backgroundColor: "#fff", 
+    backgroundColor: "#f2f5fa", 
     borderRadius: 10, 
     padding: 15, 
     marginBottom: 15 
   },
   label: { 
     fontSize: 16, 
-    color: "#555", 
-    fontWeight: "bold" 
+    fontWeight: "bold",
   },
   value: { 
     fontSize: 16, 
-    color: "#333", 
-    marginTop: 5 
+    marginTop: 5,
   },
   addButton: { 
     backgroundColor: Colors.primary, 

@@ -14,10 +14,13 @@ export const API_ENDPOINTS = {
     },
     TRANSACTION: {
       CREATE_TICKET: `${BASE_URL}transactions`,
-      GET_ALL_TRANSACTIONS: `${BASE_URL}transactions/user`,
+      GET_ALL_TRANSACTIONS: `${BASE_URL}transactions/user?pagination=false`,
     },
     PAYMENT: {
       CREATE_PAYMENT: `${BASE_URL}payments`,
+    },
+    PRICE: {
+      GET_ALL_PRICES: `${BASE_URL}price`,
     }
 };
 

@@ -1,24 +1,26 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Button, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Button, TouchableOpacity, BackHandler } from "react-native";
 import axios from "axios";
 import { Colors } from "@/constants/Colors";
 import { API_ENDPOINTS } from "@/constants/Api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ButtonCom from "@/components/ui/Button";
+import { useCallback } from "react";
 
 interface Ticket {
   id: string;
   hikerName: string;
   address: string;
   phoneNumber: string;
+  ticketType: string;
+  ticketPrice: number;
 }
 
 interface TransactionDetail {
   id: string;
   startDate: string;
   endDate: string;
-  status: "START" | "DONE" | "CANCELLED" | "PENDING" | "BOOKED";
+  status: "START" | "DONE" | "CANCELLED" | "PENDING" | "BOOKED" | "UNPAID";
   totalAmount: number;
   tickets: Ticket[];
   createdAt: string;
@@ -30,11 +32,29 @@ const BookDetailScreen: React.FC = () => {
   const [transactionDetail, setTransactionDetail] = useState<TransactionDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        router.replace("/(tabs)/transaction");
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => {
+        backHandler.remove();
+      };
+    }, [])
+  );
+
   useEffect(() => {
     const fetchTransactionDetail = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        const response = await axios.get<{ data: TransactionDetail }>(`${API_ENDPOINTS.TRANSACTION.CREATE_TICKET}/${transactionId}`,{
+        const response = await axios.get<{ data: TransactionDetail }>(`${API_ENDPOINTS.TRANSACTION.CREATE_TICKET}/${transactionId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -66,22 +86,15 @@ const BookDetailScreen: React.FC = () => {
     );
   }
 
-  const {
-    id,
-    startDate,
-    endDate,
-    status,
-    totalAmount,
-    tickets,
-    createdAt,
-  } = transactionDetail;
+  const { id, startDate, endDate, status, totalAmount, tickets, createdAt } = transactionDetail;
 
-  // Dummy cost breakdown
-  const costBreakdown = [
-    { label: "Base Fee", amount: 500000 },
-    { label: "Additional Services", amount: 150000 },
-    { label: "Discount", amount: -50000 },
-  ];
+  const costBreakdown = tickets.map((ticket) => {
+    const ticketTypeLabel = ticket.ticketType === "WNA" ? "FOREIGNER" : "Local";
+    return {
+      label: `${ticketTypeLabel} - ${ticket.hikerName}`,
+      amount: ticket.ticketPrice,
+    };
+  });
 
   const totalCost = costBreakdown.reduce((total, item) => total + item.amount, 0);
 
@@ -119,100 +132,99 @@ const BookDetailScreen: React.FC = () => {
     }
   };
 
-
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Transaction Date:</Text>
-          <Text style={styles.value}>{new Date(createdAt).toLocaleDateString()}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Travel Date:</Text>
-          <Text style={styles.value}>
-            {startDate} - {endDate}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Status:</Text>
-          <Text
-            style={[
-              styles.value,
-              {
-                fontWeight: "bold",
-                color:
-                  status === "DONE"
-                    ? "#2196F3"
-                    : status === "CANCELLED"
-                    ? "#f44336"
-                    : status === "PENDING"
-                    ? "#9E9E9E"
-                    : status === "START"
-                    ? "#4CAF50"
-                    : status === "BOOKED"
-                    ? "#FF9800"
-                    : "#555",
-              },
-            ]}
-          >
-            {status}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Total Amount:</Text>
-          <Text style={[styles.value, styles.amount]}>
-            Rp{new Intl.NumberFormat("id-ID").format(totalAmount)}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.title}>Cost Breakdown</Text>
-        {costBreakdown.map((item, index) => (
-          <View key={index} style={styles.costRow}>
-            <Text style={styles.label}>{item.label}:</Text>
+    <React.Fragment>
+      <ScrollView style={styles.container}>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Transaction Date:</Text>
+            <Text style={styles.value}>{new Date(createdAt).toLocaleDateString()}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Travel Date:</Text>
             <Text style={styles.value}>
-              Rp{new Intl.NumberFormat("id-ID").format(item.amount)}
+              {startDate} - {endDate}
             </Text>
           </View>
-        ))}
-        <View style={styles.costRow}>
-          <Text style={styles.label}>Total:</Text>
-          <Text style={[styles.value, styles.amount]}>
-            Rp{new Intl.NumberFormat("id-ID").format(totalCost)}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.title}>Hiker Details</Text>
-        {tickets.map((ticket, index) => (
-          <View key={ticket.id} style={styles.ticketContainer}>
-            <Text style={styles.ticketLabel}>Hiker {index + 1}:</Text>
-            <View style={styles.ticketDetail}>
-              <Text style={styles.label}>Name:</Text>
-              <Text style={styles.value}>{ticket.hikerName}</Text>
-            </View>
-            <View style={styles.ticketDetail}>
-              <Text style={styles.label}>Address:</Text>
-              <Text style={styles.value}>{ticket.address}</Text>
-            </View>
-            <View style={styles.ticketDetail}>
-              <Text style={styles.label}>Phone:</Text>
-              <Text style={styles.value}>{ticket.phoneNumber}</Text>
-            </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Status:</Text>
+            <Text
+              style={[
+                styles.value,
+                {
+                  fontWeight: "bold",
+                  color:
+                    status === "DONE"
+                      ? "#2196F3"
+                      : status === "CANCELLED"
+                      ? "#f44336"
+                      : status === "PENDING"
+                      ? "#9E9E9E"
+                      : status === "START"
+                      ? "#4CAF50"
+                      : status === "BOOKED"
+                      ? "#FF9800"
+                      : status === "UNPAID"
+                      ? "#FFC107"
+                      : "#000",
+                },
+              ]}
+            >
+              {status}
+            </Text>
           </View>
-        ))}
-      </View>
+        </View>
 
+        <View style={styles.card}>
+          <Text style={styles.title}>Payment Detail</Text>
+          {costBreakdown.map((item, index) => (
+            <View key={index} style={styles.costRow}>
+              <Text style={styles.label}>{item.label}</Text>
+              <Text style={styles.value}>
+                Rp{new Intl.NumberFormat("id-ID").format(item.amount)}
+              </Text>
+            </View>
+          ))}
+          <View style={styles.costRow}>
+            <Text style={styles.label}>Total:</Text>
+            <Text style={[styles.value, styles.amount]}>
+              Rp{new Intl.NumberFormat("id-ID").format(totalCost)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.title}>Hiker Details</Text>
+          {tickets.map((ticket, index) => (
+            <View key={ticket.id} style={styles.ticketContainer}>
+              <Text style={styles.ticketLabel}>Hiker {index + 1}:</Text>
+              <View style={styles.ticketDetail}>
+                <Text style={styles.label}>Name:</Text>
+                <Text style={styles.value}>{ticket.hikerName}</Text>
+              </View>
+              <View style={styles.ticketDetail}>
+                <Text style={styles.label}>Address:</Text>
+                <Text style={styles.value}>{ticket.address}</Text>
+              </View>
+              <View style={styles.ticketDetail}>
+                <Text style={styles.label}>Phone:</Text>
+                <Text style={styles.value}>{ticket.phoneNumber}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
       {status === "PENDING" && (
-        <ButtonCom variant="primary" onPress={handlePayment} >
-          Continue Payment
-        </ButtonCom>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handlePayment}>
+            <Text style={styles.buttonText}>Continue Payment</Text>
+          </TouchableOpacity>
+        </View>
       )}
-    </ScrollView>
+    </React.Fragment>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -245,7 +257,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "thin",
     marginBottom: 12,
     color: Colors.primary,
   },
@@ -257,7 +269,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     color: "#555",
-    fontWeight: "bold",
+    fontWeight: "thin",
   },
   value: {
     fontSize: 14,
@@ -276,7 +288,6 @@ const styles = StyleSheet.create({
   },
   ticketLabel: {
     fontSize: 16,
-    fontWeight: "bold",
     color: Colors.primary,
     marginBottom: 8,
   },
@@ -296,12 +307,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 5,
-    marginVertical: 20,
   },
   buttonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    left: 0,
+    marginTop: 20,
   },
 });
 

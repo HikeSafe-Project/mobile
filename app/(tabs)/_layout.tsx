@@ -6,16 +6,12 @@ import { Colors } from "@/constants/Colors";
 
 const screens = [
   {
-    name: "explore/index",
-    icon: "set-none",
+    name: "index",
+    icon: "home",
   },
   {
     name: "ticket/index",
     icon: "ticket",
-  },
-  {
-    name: "index",
-    icon: "home",
   },
   {
     name: "transaction/index",
