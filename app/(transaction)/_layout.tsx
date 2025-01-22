@@ -10,7 +10,7 @@ export default function AuthLayout() {
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack>
-        <Stack.Screen name="history/index" options={{ headerShown: false }} />
+        <Stack.Screen name="invoice/index" options={{ headerTitle: 'Invoice | HikeSafe', }} />
         <Stack.Screen name="detail/index" options={{ headerTitle: 'Detail Transaction', }} />
       </Stack>
       <StatusBar style="auto" />

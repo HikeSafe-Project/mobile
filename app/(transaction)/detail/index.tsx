@@ -1,6 +1,14 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  RefreshControl,
+} from "react-native";
 import axios from "axios";
 import { Colors } from "@/constants/Colors";
 import { API_ENDPOINTS } from "@/constants/Api";
@@ -36,11 +44,14 @@ const BookDetailScreen: React.FC = () => {
   const fetchTransactionDetail = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await axios.get<{ data: TransactionDetail }>(`${API_ENDPOINTS.TRANSACTION.CREATE_TICKET}/${transactionId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get<{ data: TransactionDetail }>(
+        `${API_ENDPOINTS.TRANSACTION.CREATE_TICKET}/${transactionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setTransactionDetail(response.data.data);
     } catch (error) {
       console.error("Error fetching transaction detail:", error);
@@ -87,41 +98,11 @@ const BookDetailScreen: React.FC = () => {
 
   const totalCost = costBreakdown.reduce((total, item) => total + item.amount, 0);
 
-  const handlePayment = async () => {
-    if (!transactionDetail?.id) {
-      console.error("Transaction ID is missing.");
-      return;
-    }
-
-    try {
-      const token = await AsyncStorage.getItem("token");
-
-      const response = await axios.post(
-        `${API_ENDPOINTS.PAYMENT.CREATE_PAYMENT}/${transactionDetail.id}/create-payment-link`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (response.data.data) {
-        const paymentLink = response.data.data;
-        router.push(paymentLink);
-      }
-    } catch (error: any) {
-      console.error("Error creating payment link:", error.message);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-      }
-    }
-  };
-
-  const handlePendingPayment = async () => {
-    router.push(transactionDetail?.paymentUrl);
+  const handleInvoice = (transactionId: string) => {
+    router.push({
+      pathname: "(transaction)/invoice",
+      params: { transactionId },
+    });
   };
 
   return (
@@ -130,6 +111,15 @@ const BookDetailScreen: React.FC = () => {
         style={styles.container}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[Colors.primary]} />}
       >
+        {status !== "UNPAID" && status !== "PENDING" && (
+          <View style={styles.paymentStatusContainer}>
+            <Text style={styles.paymentStatusText}> Your ticket has been paid </Text>
+            <TouchableOpacity onPress={() => handleInvoice(id)}>
+              <Text style={styles.invoiceButtonText}>Lihat Invoice</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.card}>
           <View style={styles.row}>
             <Text style={styles.label}>Transaction Date:</Text>
@@ -209,16 +199,10 @@ const BookDetailScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
+
       {status === "UNPAID" && (
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handlePayment}>
-            <Text style={styles.buttonText}>Continue Payment</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      {status === "PENDING" && (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handlePendingPayment}>
+          <TouchableOpacity style={styles.button} onPress={() => handleInvoice(id)}>
             <Text style={styles.buttonText}>Continue Payment</Text>
           </TouchableOpacity>
         </View>
@@ -320,6 +304,30 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     marginTop: 20,
+  },
+  paymentStatusContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  paymentStatusText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.primary,
+  },
+  paymentStatusIcon: {
+    marginLeft: 5,
+  },
+  invoiceButtonText: {
+    color: "#1691de",
+    fontSize: 16,
   },
 });
 
