@@ -1,49 +1,86 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
-import AnimatedButton from '@/components/ui/AnimatedButton';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '@/constants/Colors';
 import { API_ENDPOINTS } from '@/constants/Api';
+import AnimatedButton from '@/components/ui/AnimatedButton';
+
+interface Transaction {
+  status: string;
+  startDate: string;
+  endDate: string;
+}
 
 export default function HomeScreen() {
   const [username, setUsername] = useState('John Doe');
   const [stats, setStats] = useState({
     hikes: 0,
-    mountains: 0,
+    hikingDays: 0,
     hours: 0,
   });
 
   useEffect(() => {
     const fetchUserData = async () => {
       const token = await AsyncStorage.getItem('token');
-      
+
       if (token) {
         try {
-          const response = await axios.get(`${API_ENDPOINTS.AUTH.ME}`, {
+          const userResponse = await axios.get(`${API_ENDPOINTS.AUTH.ME}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          const userData = response.data.data;
+          const userData = userResponse.data.data;
           setUsername(userData.fullName);
 
-          // Contoh data statistik (API Endpoint atau Mock Data)
-          const statsResponse = await axios.get(`${API_ENDPOINTS.STATS}`, {
+          const transactionsResponse = await axios.get(`${API_ENDPOINTS.TRANSACTION.GET_ALL_TRANSACTIONS}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          setStats(statsResponse.data);
+
+          const transactions: Transaction[] = transactionsResponse.data.data;
+
+          const doneTransactions = transactions.filter((t: Transaction) => t.status === "DONE");
+
+          const totalHikes = doneTransactions.length;
+
+          const totalDays = doneTransactions.reduce((sum: number, t: Transaction) => {
+            if (t.startDate && t.endDate) {
+              const start = new Date(t.startDate);
+              const end = new Date(t.endDate);
+              const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+              return sum + days;
+            }
+            return sum;
+          }, 0);
+
+          const totalHours = doneTransactions.reduce((sum: number, t: any) => {
+            const start = new Date(t.startDate);
+            const end = new Date(t.endDate);
+            
+            const durationInMillis = end.getTime() - start.getTime();
+            const durationInHours = durationInMillis / (1000 * 60 * 60);
+            
+            return sum + durationInHours;
+          }, 0);
+
+          setStats({
+            hikes: totalHikes,
+            hikingDays: totalDays,
+            hours: totalHours,
+          });
         } catch (error) {
           console.error('Error fetching user or stats data:', error);
         }
       }
     };
+
     fetchUserData();
   }, []);
+
 
   return (
     <View style={styles.container}>
@@ -70,9 +107,9 @@ export default function HomeScreen() {
             <Text style={styles.statLabel}>Total Hikes</Text>
           </View>
           <View style={styles.statItem}>
-            <FontAwesome5 name="mountain" size={30} color={Colors.primary} />
-            <Text style={styles.statValue}>{stats.mountains}</Text>
-            <Text style={styles.statLabel}>Mountains Climbed</Text>
+            <FontAwesome5 name="calendar" size={30} color={Colors.primary} />
+            <Text style={styles.statValue}>{stats.hikingDays}</Text>
+            <Text style={styles.statLabel}>Hiking Days</Text>
           </View>
           <View style={styles.statItem}>
             <FontAwesome5 name="clock" size={30} color={Colors.primary} />
