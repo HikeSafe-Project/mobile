@@ -13,7 +13,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ButtonCom from "@/components/ui/Button";
 import { API_ENDPOINTS } from "@/constants/Api";
 import axios from "axios";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons } from "@expo/vector-icons";
 
 interface Profile {
   fullName: string;
@@ -37,6 +38,7 @@ const ProfileScreen = () => {
   });
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false); 
   const router = useRouter();
 
   useEffect(() => {
@@ -59,20 +61,28 @@ const ProfileScreen = () => {
   }, []);
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('token');
-    router.replace('/(auth)/login');
+    await AsyncStorage.removeItem("token");
+    router.replace("/(auth)/login");
   };
 
-  const handleImagePick = async () => {
+  const pickImage = async (source: "gallery" | "camera") => {
     try {
-      let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      console.log('Hasil ImagePicker:', result);
+      let result;
+      if (source === "gallery") {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+      } else {
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+        });
+      }
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const imageUrl = result.assets[0].uri;
@@ -82,22 +92,17 @@ const ProfileScreen = () => {
           imageUrl,
         }));
 
-        console.log('Profile setelah update:', {
-          ...profile,
-          imageUrl,
-        });
-
-        const token = await AsyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem("token");
         if (!token) {
-          console.error('Token tidak ditemukan');
+          console.error("Token not found");
           return;
         }
 
         const formData = new FormData();
-        formData.append('image', {
+        formData.append("image", {
           uri: imageUrl,
-          name: 'profile.jpg',
-          type: 'image/jpeg',
+          name: "profile.jpg",
+          type: "image/jpeg",
         } as any);
 
         const response = await axios.put(
@@ -106,27 +111,27 @@ const ProfileScreen = () => {
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
+              "Content-Type": "multipart/form-data",
             },
           }
         );
-
-        console.log('Response dari server:', response.data);
-      } else {
-        console.log('Pemilihan gambar dibatalkan');
+        console.log(response.data);
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('Kesalahan Axios:', error.response?.data);
+        console.error("Error axios: ", error.response?.data);
       } else {
-        console.error('Error saat memilih gambar atau mengupdate profile:', error);
+        console.error("Error while picking image:", error);
       }
     }
   };
 
   return (
     <View style={styles.container}>
-      <Image source={require("@/assets/images/mountainbackground.png")} style={styles.image} />
+      <Image
+        source={require("@/assets/images/mountainbackground.png")}
+        style={styles.image}
+      />
       <View style={styles.infoCard}>
         <View style={styles.infoContainer}>
           <Text style={styles.infoLabel}>NIK</Text>
@@ -144,24 +149,68 @@ const ProfileScreen = () => {
       </View>
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleImagePick}>
-          <Image source={{ uri: profile?.imageUrl }} style={styles.profileImage} />
-        </TouchableOpacity>
+        <View>
+          <Image
+            source={{ uri: profile?.imageUrl }}
+            style={styles.profileImage}
+          />
+          <TouchableOpacity  onPress={() => setShowImageModal(true)} style={styles.cameraIconContainer}>
+            <MaterialIcons name="camera-alt" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.name}>{profile?.fullName}</Text>
         <Text style={styles.subInfo}>{profile?.email}</Text>
-        <ButtonCom variant='ghost'>
-          <Link href='/edit-profile'>Edit Profile</Link>
+        <ButtonCom variant="ghost">
+          <Link href="/edit-profile">Edit Profile</Link>
         </ButtonCom>
       </View>
 
-      <ButtonCom 
-        variant='danger'
-        onPress={() => setShowLogoutModal(true)}
-      >
+      <ButtonCom variant="danger" onPress={() => setShowLogoutModal(true)}>
         Logout
       </ButtonCom>
 
-      {/* Modal Confirmation */}
+      <Modal
+        visible={showImageModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowImageModal(false)}
+            >
+              <MaterialIcons name="close" size={24} color="black" />
+            </TouchableOpacity>
+
+            <View style={styles.modalRow}>
+              <TouchableOpacity
+                style={styles.modalButtonRow}
+                onPress={() => {
+                  setShowImageModal(false);
+                  pickImage("gallery");
+                }}
+              >
+                <MaterialIcons name="photo-library" size={24} color="white" />
+                <Text style={styles.modalButtonText}>Galeri</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonRow}
+                onPress={() => {
+                  setShowImageModal(false);
+                  pickImage("camera");
+                }}
+              >
+                <MaterialIcons name="camera-alt" size={24} color="white" />
+                <Text style={styles.modalButtonText}>Kamera</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
       <Modal
         visible={showLogoutModal}
         transparent={true}
@@ -271,6 +320,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "80%",
   },
+  closeButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+  },
   modalText: {
     fontSize: 16,
     marginBottom: 20,
@@ -292,6 +346,29 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: "white",
     fontWeight: "bold",
+    marginLeft: 10,
+  },
+    cameraIconContainer: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+    padding: 5,
+  },
+  modalRow: {
+  flexDirection: "row",
+  justifyContent: "space-around",
+  width: "100%",
+  marginTop: 10,
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 5,
+    backgroundColor: Colors.primary,
   },
 });
 
