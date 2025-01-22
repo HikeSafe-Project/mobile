@@ -1,11 +1,10 @@
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Button, TouchableOpacity, BackHandler } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, RefreshControl } from "react-native";
 import axios from "axios";
 import { Colors } from "@/constants/Colors";
 import { API_ENDPOINTS } from "@/constants/Api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback } from "react";
 
 interface Ticket {
   id: string;
@@ -25,48 +24,38 @@ interface TransactionDetail {
   tickets: Ticket[];
   createdAt: string;
   updatedAt: string;
+  paymentUrl: string;
 }
 
 const BookDetailScreen: React.FC = () => {
   const { transactionId } = useLocalSearchParams<{ transactionId: string }>();
   const [transactionDetail, setTransactionDetail] = useState<TransactionDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        router.replace("/(tabs)/transaction");
-        return true;
-      };
+  const fetchTransactionDetail = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await axios.get<{ data: TransactionDetail }>(`${API_ENDPOINTS.TRANSACTION.CREATE_TICKET}/${transactionId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setTransactionDetail(response.data.data);
+    } catch (error) {
+      console.error("Error fetching transaction detail:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-      const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction
-      );
-
-      return () => {
-        backHandler.remove();
-      };
-    }, [])
-  );
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchTransactionDetail();
+  }, []);
 
   useEffect(() => {
-    const fetchTransactionDetail = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        const response = await axios.get<{ data: TransactionDetail }>(`${API_ENDPOINTS.TRANSACTION.CREATE_TICKET}/${transactionId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setTransactionDetail(response.data.data);
-      } catch (error) {
-        console.error("Error fetching transaction detail:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTransactionDetail();
   }, [transactionId]);
 
@@ -121,7 +110,6 @@ const BookDetailScreen: React.FC = () => {
 
       if (response.data.data) {
         const paymentLink = response.data.data;
-
         router.push(paymentLink);
       }
     } catch (error: any) {
@@ -132,9 +120,16 @@ const BookDetailScreen: React.FC = () => {
     }
   };
 
+  const handlePendingPayment = async () => {
+    router.push(transactionDetail?.paymentUrl);
+  };
+
   return (
     <React.Fragment>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[Colors.primary]} />}
+      >
         <View style={styles.card}>
           <View style={styles.row}>
             <Text style={styles.label}>Transaction Date:</Text>
@@ -221,10 +216,16 @@ const BookDetailScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       )}
+      {status === "PENDING" && (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handlePendingPayment}>
+            <Text style={styles.buttonText}>Continue Payment</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </React.Fragment>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
