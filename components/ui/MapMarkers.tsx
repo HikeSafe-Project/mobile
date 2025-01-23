@@ -1,45 +1,40 @@
 import React from "react";
 import { Marker } from "react-native-maps";
 import { Alert } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 
-type Device = {
+type History = {
   id: number;
   groupName: string;
   hikers: { id: number; name: string; age: number }[];
-  latitude: number;
-  longitude: number;
+  coordinates: { latitude: string; longitude: string }[];
 };
 
 type Props = {
-  devices: Device[];
+  histories: History[];
+  visibilityMap: { [key: number]: boolean };
 };
 
-const MapMarkers = ({ devices }: Props) => {
-  const handleMarkerPress = (device: Device) => {
-    const hikerNames = device.hikers.map((hiker) => hiker.name).join(", ");
-    Alert.alert(
-      `Info tentang Kelompok ${device.groupName}`,
-      `Anggota: ${hikerNames}\nLokasi: ${device.latitude}, ${device.longitude}`
-    );
-  };
-
+const MapMarkers = ({ histories, visibilityMap }: Props) => {
   return (
     <>
-      {devices.map((device) => (
-        <Marker
-          key={device.id}
-          coordinate={{
-            latitude: device.latitude,
-            longitude: device.longitude,
-          }}
-          title={`Kelompok ${device.groupName}`}
-          description={`Lokasi: ${device.latitude}, ${device.longitude}`}
-          onPress={() => handleMarkerPress(device)}
-        >
-          <FontAwesome name="users" size={30} color="blue" />
-        </Marker>
-      ))}
+      {histories.map(
+        (history) =>
+          visibilityMap[history.id] &&
+          history.coordinates.map((coordinate, index) => (
+            <Marker
+              key={history.id + index}
+              coordinate={{
+                latitude: parseFloat(coordinate.latitude),
+                longitude: parseFloat(coordinate.longitude),
+              }}
+              title={`${history.groupName}`}
+              description={`Location: ${coordinate.latitude}, ${coordinate.longitude}`}
+            >
+              <Entypo name="dot-single" size={30} color="lime" />
+            </Marker>
+          ))
+      )}
     </>
   );
 };

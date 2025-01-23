@@ -1,5 +1,6 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { Colors } from "@/constants/Colors";
 
 type Props = {
   showGroups: boolean;
@@ -13,7 +14,7 @@ const ToggleButton = ({ showGroups, toggleGroupList }: Props) => {
       onPress={toggleGroupList}
     >
       <Text style={styles.buttonText}>
-        {showGroups ? "Sembunyikan Kelompok" : "Tampilkan Kelompok"}
+        {showGroups ? "Hide History" : "Show History"}
       </Text>
     </TouchableOpacity>
   );
@@ -22,7 +23,7 @@ const ToggleButton = ({ showGroups, toggleGroupList }: Props) => {
 const styles = StyleSheet.create({
   button: {
     padding: 10,
-    backgroundColor: "#6200EE",
+    backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 25,
