@@ -37,11 +37,14 @@ const TrackingScreen = () => {
 
         const fetchedData = response.data.data;
 
-        const mappedHistory = fetchedData.map((transaction: any) => ({
+        const filteredData = fetchedData.filter((transaction: any) => transaction.status === "DONE");
+
+        const mappedHistory = filteredData.map((transaction: any) => ({
           id: transaction.id,
           groupName: transaction.user.fullName,
           startDate: transaction.startDate,
           endDate: transaction.endDate,
+          status: transaction.status,
           hikers: transaction.tickets.map((ticket: any) => ({
             id: ticket.id,
             name: ticket.hikerName,

@@ -82,45 +82,51 @@ const GroupList = ({
           },
         ]}
       >
-        <FlatList
-          data={histories}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <TouchableOpacity
-                style={styles.itemContent}
-                onPress={() => focusOnGroup(item)}
-              >
-                <Text style={styles.groupName}>{item.startDate} - {item.endDate}</Text>
-                <Text style={styles.hikers}>
-                  {item.hikers.map((hiker) => hiker.name).join(", ")}
-                </Text>
-              </TouchableOpacity>
-              <View style={styles.actions}>
+        {histories.length === 0 ? (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>No Data Available</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={histories}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
                 <TouchableOpacity
-                  style={styles.iconButton}
-                  onPress={() => toggleMarkerVisibility(item.id)}
+                  style={styles.itemContent}
+                  onPress={() => focusOnGroup(item)}
                 >
-                  <MaterialCommunityIcons
-                    name={visibilityMap[item.id] ? "eye" : "eye-off"}
-                    size={24}
-                    color={Colors.primary}
-                  />
+                  <Text style={styles.groupName}>{item.startDate} - {item.endDate}</Text>
+                  <Text style={styles.hikers}>
+                    {item.hikers.map((hiker) => hiker.name).join(", ")}
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.iconButton, { marginLeft: 10 }]}
-                  onPress={() => openModal(item)}
-                >
-                  <MaterialCommunityIcons
-                    name="information-outline"
-                    size={24}
-                    color={Colors.secondary}
-                  />
-                </TouchableOpacity>
+                <View style={styles.actions}>
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => toggleMarkerVisibility(item.id)}
+                  >
+                    <MaterialCommunityIcons
+                      name={visibilityMap[item.id] ? "eye" : "eye-off"}
+                      size={24}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.iconButton, { marginLeft: 10 }]}
+                    onPress={() => openModal(item)}
+                  >
+                    <MaterialCommunityIcons
+                      name="information-outline"
+                      size={24}
+                      color={Colors.secondary}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          )}
-        />
+            )}
+          />
+        )}
       </Animated.View>
 
       {selectedGroup && (
@@ -292,5 +298,14 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  noDataContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100%',
+  },
+  noDataText: {
+    fontSize: 16,
+    color: 'gray',
   },
 });
