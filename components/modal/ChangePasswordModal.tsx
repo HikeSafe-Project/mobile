@@ -47,6 +47,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }
 
     const token = await AsyncStorage.getItem("token");
+    console.log("Token:", token);
     if (!token) {
       Alert.alert("Error", "Authentication token is missing.");
       return;

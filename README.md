@@ -1,50 +1,58 @@
-# Welcome to your Expo app 👋
+# HikeSafe Mobile Application
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Overview
 
-## Get started
+HikeSafe is a mobile application designed to enhance the safety and convenience of mountain hikers. By integrating location tracking, hiking bookings, and secure payment processing, HikeSafe aims to provide a comprehensive solution for outdoor enthusiasts, even in remote areas without internet coverage.
+Features
 
-1. Install dependencies
+## Development Setup
+
+To set up the development environment for the HikeSafe mobile application, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://git.enigmacamp.com/enigma-camp/gosling-class/batch-5/kelompok-1/final-project/mobile.git
+   ```
+2. Install Dependencies: Make sure you have Node.js installed. Then run:
 
    ```bash
    npm install
    ```
-
-2. Start the app
+3. Start the Development Server: Run:
 
    ```bash
-    npx expo start
+   npm expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Key Features
+- Hiker Tracking
+    Real-Time Location Tracking: The application accurately tracks and displays hikers’ locations, ensuring safety during hiking activities.
+- Hiking Booking
+    Manage Bookings: Users can easily create, manage, and cancel their hiking bookings directly from the mobile app.
+    Synchronization: All bookings are synchronized between the mobile app and the web platform for a seamless user experience.
+- Hiking History
+    Access Past Hikes: Users can view their hiking history, allowing them to keep track of their adventures.
+- Secure Payment Processing
+    Midtrans Payment Gateway: The app integrates with Midtrans to provide secure and encrypted payment transactions, ensuring user data safety and quick payment confirmations.
+- User Management
+    Seamless Registration and Login: The mobile app supports easy registration, login, and logout processes, ensuring a user-friendly experience.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Technology Stack
+- Language: JavaScript
+- Framework: React Native
+- IDE: Visual Studio Code
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Backend Integration
+- Backend Integration: The mobile app connects to the backend server using APIs to retrieve and update data.
+- Payment Gateway: Midtrans for secure payment processing.
 
-## Get a fresh project
+UI Design
+- Design Tool: Figma for creating intuitive and user-friendly interfaces. 
 
-When you're ready, run:
+System Stability
+- Reliable Performance: The device tracking is designed to operate effectively in remote areas without internet coverage, utilizing frequency communication technology for data transmission.
 
-```bash
-npm run reset-project
-```
+## Conclusion
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+HikeSafe is committed to enhancing the safety and convenience of hikers through innovative technology. With features like real-time tracking, easy booking management, and secure payments, HikeSafe is the perfect companion for your outdoor adventures. Enjoy your hikes with peace of mind!
