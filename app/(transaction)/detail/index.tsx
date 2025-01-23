@@ -181,7 +181,7 @@ const BookDetailScreen: React.FC = () => {
             <Text style={styles.value}>{new Date(createdAt).toLocaleDateString()}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Travel Date:</Text>
+            <Text style={styles.label}>Schedule:</Text>
             <Text style={styles.value}>
               {startDate} - {endDate}
             </Text>
