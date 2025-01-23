@@ -23,7 +23,9 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "plugins": [
@@ -42,6 +44,11 @@
           "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiemhpZGFuIiwiYSI6ImNtNXpncm81eTAyZWIya3I0ZjJxaWd5MnQifQ.8o0j_QJP6bH3VyWIdRtIbw"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a6d6b9d6-7e90-4d7c-a32b-c61924447a1b"
+      }
+    }
   }
 }

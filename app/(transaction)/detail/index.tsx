@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   RefreshControl,
+  Linking,
+  BackHandler,
 } from "react-native";
 import axios from "axios";
 import { Colors } from "@/constants/Colors";
@@ -70,6 +72,22 @@ const BookDetailScreen: React.FC = () => {
     fetchTransactionDetail();
   }, [transactionId]);
 
+    useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        router.replace("/(tabs)/transaction");
+        return true;
+      };
+
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+
+      return () => backHandler.remove();
+    }, [router])
+  );
+
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -104,6 +122,43 @@ const BookDetailScreen: React.FC = () => {
       params: { transactionId },
     });
   };
+
+  const handlePayment = async () => {
+    if (!transactionDetail?.id) {
+      console.error("Transaction ID is missing.");
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.post(
+        `${API_ENDPOINTS.PAYMENT.CREATE_PAYMENT}/${transactionDetail.id}/create-payment-link`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (response.data.data) {
+        const paymentLink = response.data.data;
+        router.push(paymentLink);
+      }
+    } catch (error: any) {
+      console.error("Error creating payment link:", error.message);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+      }
+    }
+  };
+
+  const handleContinuePayment = () => {
+    router.push(transactionDetail?.paymentUrl);
+  }
 
   return (
     <React.Fragment>
@@ -202,7 +257,14 @@ const BookDetailScreen: React.FC = () => {
 
       {status === "UNPAID" && (
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => handleInvoice(id)}>
+          <TouchableOpacity style={styles.button} onPress={handlePayment}>
+            <Text style={styles.buttonText}>Continue Payment</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {status === "PENDING" && (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handleContinuePayment}>
             <Text style={styles.buttonText}>Continue Payment</Text>
           </TouchableOpacity>
         </View>

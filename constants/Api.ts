@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://dev-haven.mahesvara.me/api/v1/";
+const BASE_URL = "https://api.hike-safe.my.id/api/v1/";
 
 export const API_ENDPOINTS = {
     AUTH: {
