@@ -12,7 +12,7 @@ To set up the development environment for the HikeSafe mobile application, follo
 1. Clone the repository:
 
    ```bash
-   git clone https://git.enigmacamp.com/enigma-camp/gosling-class/batch-5/kelompok-1/final-project/mobile.git
+   git clone git@github.com:HikeSafe-Project/mobile.git
    ```
 2. Install Dependencies: Make sure you have Node.js installed. Then run:
 
